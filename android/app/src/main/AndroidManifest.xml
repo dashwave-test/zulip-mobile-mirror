@@ -1,0 +1,130 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.zulipmobile">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission
+        android:name="android.permission.READ_PHONE_STATE"
+        tools:node="remove" />
+
+    <!-- CAMERA has an unexpected wrinkle, and we want to avoid having any
+         dependency requesting it. See
+         https://chat.zulip.org/#narrow/stream/243-mobile-team/topic/react-native-image-picker.20upgrade/near/1267245,
+         https://github.com/react-native-image-picker/react-native-image-picker/commit/839d2afe1,
+         and https://issuetracker.google.com/issues/37063818 -->
+    <uses-permission
+        android:name="android.permission.CAMERA"
+        tools:node="remove" />
+
+    <!-- We shouldn't need these two elements in our merged manifest when we
+         stop supporting Android 9 (SDK version 28); see
+         https://developer.android.com/training/data-storage/shared/media#storage-permission.
+         At that time, check that none of our dependencies (such as
+         expo-file-system) are trying to request these permissions; if they
+         are, use tools:node="remove"
+         (https://developer.android.com/studio/build/manage-manifests#node_markers).
+         If this reasoning changes, adjust `androidEnsureStoragePermission`
+         in src/lightbox/download.js accordingly.
+         -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <!-- We use certain modules that adds the permission requirement for
+         `ACCESS_WIFI_STATE` in the final AndroidManifest of the app, which makes
+         wifi hardware a compulsary requirement to install the app. The following
+         statement makes the hardware requirement optional. -->
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+
+    <queries>
+        <intent>
+            <!-- Find Chrome Custom Tabs, with this query and a
+                 "com.android.chrome" package check, so we can use
+                 it to open external links. -->
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+        <intent>
+            <!-- Find other apps that can open URLs, in case Chrome
+                 Custom Tabs is unavailable, so we can open external links. -->
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".MainApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme"
+        android:networkSecurityConfig="@xml/network_security_config"
+    >
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="login"
+                    android:scheme="zulip" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ShareToZulipActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="standard"
+        >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".notifications.FcmListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- To make a build that reports errors to Sentry, fill in the Sentry DSN below
+             and uncomment.  See src/sentryConfig.js for another site and more discussion. -->
+        <!--
+        <meta-data android:name="io.sentry.auto-init" android:value="true" tools:node="replace" />
+        <meta-data android:name="io.sentry.dsn" android:value="https://123@sentry.example/45" />
+        -->
+    </application>
+</manifest>

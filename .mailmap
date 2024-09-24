@@ -1,0 +1,65 @@
+# This file teaches `git log` and friends the canonical names
+# and email addresses to use for our contributors.
+#
+# For details on the format, see:
+#   https://git.github.io/htmldocs/gitmailmap.html
+#
+# Handy commands for examining or adding to this file:
+#
+#     # shows all names/emails after mapping, sorted:
+#   $ git shortlog -es | sort -k2
+#
+#     # shows raw names/emails, filtered by mapped name:
+#   $ git log --format='%an %ae' --author=$NAME | uniq -c
+
+Adithya Vardhan <imadithyavardhan@gmail.com>
+Adithya Vardhan <imadithyavardhan@gmail.com> <64399555+im-adithya@users.noreply.github.com>
+Akash Dhiman <akash.d0407@gmail.com>
+Alicja Raszkowska <malavarena@gmail.com>
+Alicja Raszkowska <malavarena@gmail.com> <trueskawka@users.noreply.github.com>
+Anirudh Jain <anirudh.jain@outlook.com>
+Aswin G <aswinganesh666@gmail.com>
+Brock Whittaker <brock@zulip.com> <brock@zulipchat.com>
+Chris Bobbe <cbobbe@zulip.com> <cbobbe@zulipchat.com>
+Chris Bobbe <cbobbe@zulip.com> <csbobbe@gmail.com>
+Greg Price <greg@zulip.com> <greg@zulipchat.com>
+Kunal Gupta <kunall.gupta17@gmail.com>
+Neeraj Wahi <neeraj.wahi@gmail.com> <nw@dropbox.com>
+Ray Kraesig <rkraesig@zulip.com> <rkraesig@zulipchat.com>
+Saket Kumar <saket.singh1410@gmail.com>
+Saket Kumar <saket.singh1410@gmail.com> <saketkumar95@users.noreply.github.com>
+Saumya Bhatnagar <saumya.bhatnagar.sb@gmail.com>
+Tomasz Kolek <tomasz-kolek@o2.pl> <tomasz-kolek@go2.pl>
+Vishwesh Jainkuniya <jainkuniya@gmail.com>
+Vishwesh Jainkuniya <jainkuniya@gmail.com> <15ucs161@lnmiit.ac.in>
+Vishwesh Jainkuniya <jainkuniya@gmail.com> <catchvishwesh@gmail.com>
+Vishwesh Jainkuniya <jainkuniya@gmail.com> <gitvishwesh@gmail.com>
+Vishwesh Jainkuniya <jainkuniya@gmail.com> <vishwesh03071998@gmail.com>
+
+# The goal when editing this file is to group all of a given person's
+# contributions together, and under their preferred name and email
+# address.
+#
+# Where possible, to find out what name and email address to use for a
+# person, we ask them.
+#
+# In cases where we have several names or email addresses for one
+# person and we don't directly know their preferences, we make a guess
+# based on public information, with the following principles:
+#
+#  * When making a guess, we always choose from among the names and
+#    email addresses the person has used in the Git history.
+#
+#  * If the contributions come from the same GitHub account, they're
+#    the same person.
+#
+#  * Prefer the name or email found in the contributor's GitHub profile
+#    or their chat.zulip.org profile.
+#
+#  * If one name looks like a full name and another a GitHub username,
+#    prefer the full name.
+#
+#  * If one email is at users.noreply.github.com, prefer any other.
+#
+#  * Prefer the name or email the contributor has used more often
+#    most recently.

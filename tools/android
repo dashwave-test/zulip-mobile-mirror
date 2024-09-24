@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -e
+
+
+## CLI PARSING
+
+usage() {
+    cat >&2 <<EOF
+usage: tools/android {apk | aab}
+
+Build the app for release on Android, either as an APK or an
+Android App Bundle.
+EOF
+    exit 2
+}
+
+action=
+case "${1}" in
+    apk|aab) action="${1}"; shift;;
+    *) usage;;
+esac
+if (( ${#} )); then
+    usage
+fi
+
+
+## MISC
+
+run_visibly () {
+    set -x
+    "$@"
+    { set +x; } 2>&-
+}
+
+
+## EXECUTION
+
+rootdir=$(git rev-parse --show-toplevel)
+cd "${rootdir}"
+
+check_yarn_link() {
+    local linked_paths=()
+    for f in node_modules/* node_modules/@*/*; do
+        [[ -L "$f" ]] && linked_paths+=( "${f}" )
+    done
+
+    if (( ${#linked_paths[@]} )); then
+        cat >&2 <<EOF
+Error: There are dependencies set to local patched versions
+with \`yarn link\`.
+
+Consider the following to clean up:
+
+  $ rm -- ${linked_paths[*]@Q}
+  $ yarn install --force
+
+Then retry.
+EOF
+        exit 1
+    fi
+}
+
+do_apk() {
+    check_yarn_link
+    run_visibly yarn
+
+    run_visibly tools/gradle :app:assembleRelease -Psigned -Psentry
+}
+
+do_aab() {
+    check_yarn_link
+    run_visibly yarn
+
+    run_visibly tools/gradle :app:bundleRelease -Psigned -Psentry
+}
+
+case "${action}" in
+    apk) do_apk ;;
+    aab) do_aab ;;
+esac

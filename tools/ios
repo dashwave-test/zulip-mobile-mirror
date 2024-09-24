@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -e
+
+## CLI PARSING
+
+usage() {
+    cat >&2 <<EOF
+usage: tools/ios {build | upload}
+
+Build the app for release on iOS, or upload the result to the
+App Store.
+EOF
+    exit 2
+}
+
+action=
+case "${1}" in
+    build|upload) action="${1}"; shift;;
+    *) usage;;
+esac
+if (( ${#} )); then
+    usage
+fi
+
+
+## EXECUTION
+
+rootdir=$(git rev-parse --show-toplevel)
+cd "${rootdir}"/ios
+
+archive_path="${rootdir}"/ios/build/ZulipMobile.xcarchive
+
+# These two steps "build" and "upload" are logically part of a single
+# sequence: when all goes well, we invariably follow each "build" with
+# one "upload".  (As described in docs/howto/release.md .)
+#
+# They're separate because sometimes things do not go well, and in
+# particular sometimes "upload" fails for transient reasons.  And the
+# "build" step is slow, so when retrying and/or debugging the upload,
+# it's very helpful to reuse the build output.
+
+do_build() {
+    yarn
+    echo >&2
+
+    mkdir -p build
+    logfile="$(mktemp build/log.XXXX)"
+    echo >&2 "Logs going to: ${logfile}"
+
+    echo >&2
+    echo >&2 "Archiving (i.e. building)..."
+    xcodebuild \
+      >"${logfile}" 2>&1 \
+      -workspace ZulipMobile.xcworkspace \
+      -scheme ZulipMobile \
+      archive \
+      -archivePath "${archive_path}" \
+      USE_SENTRY=YES
+}
+
+do_upload() {
+    echo >&2 "Uploading..."
+    xcodebuild \
+      -exportArchive \
+      -archivePath "${archive_path}" \
+      -allowProvisioningUpdates \
+      -exportOptionsPlist upload.plist
+}
+
+case "${action}" in
+    build)  do_build ;;
+    upload) do_upload ;;
+esac

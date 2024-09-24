@@ -1,0 +1,86 @@
+# This should match the iOS Deployment Target
+# (project > ZulipMobile > Info in Xcode)
+platform :ios, '14.0'
+
+require_relative '../node_modules/expo/scripts/autolinking.rb'
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+install! 'cocoapods', :deterministic_uuids => false
+
+target 'ZulipMobile' do
+  config = use_native_modules!
+
+  # Flags change depending on the env values.
+  flags = get_default_flags()
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # to enable hermes on iOS, change `false` to `true` and then install pods
+    :hermes_enabled => flags[:hermes_enabled],
+    :fabric_enabled => flags[:fabric_enabled],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  # Enables Flipper.
+  #
+  # Note that if you have use_frameworks! enabled, Flipper will not work and
+  # you should disable the next line.
+  # Flipper is breaking things with recent Xcode; cut it out (we've never
+  # used it):
+  #   https://github.com/facebook/react-native/issues/43335
+  # use_flipper!()
+
+  post_install do |installer|
+    react_native_post_install(installer)
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
+
+    # Apparently, Xcode 14 newly defaults CODE_SIGNING_ALLOWED to YES, and
+    # that's caused some build errors like
+    # >  Signing for "Foo" requires a development team. […]
+    # where for "Foo" we've seen, so far, "EXConstants-EXConstants" and
+    # "React-Core-AccessibilityResources".
+    #
+    # The code for our fix follows the Expo template app
+    # (expo/expo@d970a9ecb) by switching CODE_SIGNING_ALLOWED to NO,
+    # specifically for "resource bundles". The Flutter maintainers give some
+    # helpful analysis ( https://github.com/flutter/flutter/pull/111714 ):
+    # > Bundles can contain resources like images and localization files.
+    # > They are embedded in the framework and should not be codesigned.
+    # > Xcode 14 changed behavior and is erroneously codesigning these.
+    #
+    # There are reports of sporadic App Store Review rejections with
+    # code-signing disabled, though, e.g.:
+    #   https://github.com/CocoaPods/CocoaPods/issues/11402#issuecomment-1258608914
+    # But some developers had success, and it's plausible that the reported
+    # failures were red herrings. See discussion:
+    #   https://chat.zulip.org/#narrow/stream/48-mobile/topic/.22signing.20requires.20development.20team.22.20build.20error/near/1472700
+    #
+    # In facebook/react-native@967de03f3, React Native v0.71.0-rc.0 applies
+    # the same workaround (in react_native_post_install, which we call
+    # above), except limited to the React-Core pod. So we'll double-process
+    # React-Core, which we expect to be harmless.
+    #
+    # Flutter and React Native's workarounds mention the CocoaPods issue
+    # https://github.com/CocoaPods/CocoaPods/issues/11402 with hope that
+    # CocoaPods will publish a fix.
+    installer.target_installation_results.pod_target_installation_results
+      .each do |pod_name, target_installation_result|
+      target_installation_result.resource_bundle_targets.each do |resource_bundle_target|
+        resource_bundle_target.build_configurations.each do |config|
+          config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        end
+      end
+    end
+  end
+
+  use_expo_modules!
+
+  # If we need to enable use_frameworks!, see the change to
+  #   templates/expo-template-bare-minimum/ios/Podfile in
+  #   expo/expo@9886c0aaf.
+  # TODO: Find out if use_frameworks! is something you might actually need
+  #   to use these days. People are still talking about it (see above), but
+  #   also see https://blog.cocoapods.org/CocoaPods-1.5.0/ .
+end

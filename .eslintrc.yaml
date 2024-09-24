@@ -1,0 +1,459 @@
+# Our main ESLint config.
+
+# Tips for developing on this file:
+#
+#  * To see what config currently applies, try a command like:
+#
+#      $ npx eslint --print-config src/types.js | less
+#
+#    or for a specific rule:
+#
+#      $ npx eslint --print-config src/types.js | jq '.rules["no-continue"]'
+#
+#    Especially handy for seeing the default or base setting, when we don't
+#    configure a rule ourselves.
+#
+#  * A variation to canonicalize the config output for comparison:
+#
+#     $ npx eslint --print-config src/foo.js | jq . --sorted >/tmp/foo.json
+#     $ npx eslint --print-config src/bar.js | jq . --sorted >/tmp/bar.json
+#     $ git diff --no-index /tmp/{foo,bar}.json
+
+
+parser: "hermes-eslint"
+
+extends:
+  - airbnb
+  - plugin:jest/recommended
+  - plugin:react-hooks/recommended
+  - ./tools/formatting.eslintrc.yaml
+
+plugins:
+  - jest
+  - ft-flow
+  # - react-native  # see commented-out rules config below
+
+env:
+  browser: true
+  mocha: true
+  node: true
+  jest: true
+
+globals: # true/false means mutable/const
+  __DEV__: false
+  __TEST__: false
+
+settings:
+  # This setting is shared by the rules `import/*`.  For details, see:
+  #   https://github.com/benmosher/eslint-plugin-import#resolvers
+  #   https://www.npmjs.com/package/eslint-import-resolver-node
+  import/resolver:
+    node:
+      extensions: [.js, .ios.js, .android.js, .json]
+
+  jest:
+    # Some Jest rules depend on the Jest version. In particular,
+    #   "jest/no-deprecated-functions". If we don't provide it here,
+    #   that rule will use `process.cwd()` to grab the Jest version
+    #   from node_modules. But our VSCode plugin for ESLint seems to
+    #   be changing the working directory in a way that interferes
+    #   with that, and I haven't found the right value for that
+    #   plugin's `eslint.workingDirectories` setting to fix the
+    #   problem. Even if I did, though, that'd be one more thing to
+    #   document as part of the dev setup, so we might as well fix the
+    #   problem here.
+    version: "26"
+
+
+rules:
+
+  #
+  # ================================================================
+  # Airbnb rule repeals / adjustments.
+  #
+  # Our settings for a rule supersede Airbnb's, so we duplicate some
+  # of Airbnb's settings where we don't want a full repeal.
+  #
+
+  # When switching on a Flow-enum value, we want to omit a `default` case
+  # when Flow says the `case`s are exhaustive. See discussion:
+  #   https://github.com/zulip/zulip-mobile/pull/5444#discussion_r928049374
+  default-case: off
+
+  # When switching on a Flow-enum value, we want to omit a `default` case
+  # when Flow says the `case`s are exhaustive. And if each `case` has a
+  # `return` statement, then any return statement after the `switch` will be
+  # unreachable. This rule would have us write one anyway. See discussion:
+  #   https://github.com/zulip/zulip-mobile/pull/5444#discussion_r928049374
+  consistent-return: off
+
+  # With hermes-eslint for `parser`, above, this rule can analyze Flow
+  # types. It would fire on global types like $ReadOnly, for which it
+  # doesn't see a declaration. We could find out how to teach the rule that
+  # these types are globally defined…or just turn the rule off, because it's
+  # redundant with Flow (specifically `Flow(cannot-resolve-name)`, I think):
+  #   https://github.com/flow-typed/eslint-plugin-ft-flow/issues/33#issue-1274050123
+  no-undef: off # https://eslint.org/docs/latest/rules/no-undef
+
+  # Tricky-looking code.  These are all sometimes perfectly legitimate.
+  no-bitwise: off
+  no-confusing-arrow: off
+  no-continue: off
+  no-plusplus: off
+  no-nested-ternary: off
+  no-control-regex: off
+
+  # We prefer `let foo = undefined;` over `let foo;`, not vice versa.
+  #
+  # Sadly there doesn't seem to be a rule to say what we want, but at least
+  # turn off the one that says the opposite.
+  #
+  # See rationale at:
+  #   https://github.com/zulip/zulip-mobile/blob/main/docs/style.md#explicit-initializer
+  no-undef-init: off
+
+  # Allow multiple classes per file.
+  #
+  # It's best to have just one class per file, but there are cases
+  # where it's useful to have some tiny helper React components
+  # declared in the same file as a main component.
+  max-classes-per-file: off
+
+  # Don't forbid prop spreading (it works fine for us)
+  react/jsx-props-no-spreading: off
+
+  # Don't enforce linebreaks in curly braces in JSX
+  #
+  # The difference this would make is minor, and leaving this rule off
+  # better aligns with our practices in JS proper (not JSX).
+  react/jsx-curly-newline: off
+
+  # This rule has a bug that causes annoying irrelevant messages:
+  #   https://github.com/jsx-eslint/eslint-plugin-react/issues/3467
+  # The rule isn't important enough to be worth hacking around,
+  # especially now that we have few remaining class components.
+  react/static-property-placement: off
+
+  # Enforce state initialization style (never in constructor)
+  react/state-in-constructor:
+    - error
+    - never
+
+  # Airbnb uses four selectors under 'no-restricted-syntax':
+  #
+  # ForInStatement, ForOfStatement, LabeledStatement, WithStatement.
+  # https://github.com/airbnb/javascript/blob/dee4f17/packages/eslint-config-airbnb-base/rules/style.js#L334.
+  no-restricted-syntax:
+    - error
+
+    # ForInStatement: We agree to forbid 'for..in' loops.
+    - selector: ForInStatement
+      message: 'for..in loops iterate over the entire prototype chain, which
+        is virtually never what you want. Use Object.{keys,values,entries}, and
+        iterate over the resulting array.'
+        # Further to Airbnb's explanation: They're also slightly buggy
+        # in JSC [1], on which react-native is built... and,
+        # surprisingly, their semantics weren't fully nailed down until
+        # as late as 2019-12 [2]. But the above is reason enough.
+        # [1]: https://bugs.webkit.org/show_bug.cgi?id=38970
+        # [2]: https://github.com/tc39/proposals/commit/cb9c6e50
+
+    # ForOfStatement: We don't agree to forbid 'for..of' loops.
+    #
+    # Airbnb's style guide discourages language-level loops in favor of
+    # array iterations. We don't share this controversial view; see it
+    # expressed at https://github.com/airbnb/javascript/issues/1103.
+
+    # LabeledStatement: We don't agree to forbid labeled statements.
+    #
+    # We don't really use them, but Airbnb's reasoning flows from their
+    # anti-loop position, mentioned above, which we don't share.
+
+    # WithStatement: Agree to forbid with statements, but not this way.
+    # Instead, ...
+
+  # ... use ESLint's built-in `no-with` rule to do the same thing more simply.
+  no-with: error
+
+
+  #
+  # ================================================================
+  # Formatting.
+  #
+
+  # Disable a bunch of rules that should be taken care of by prettier.
+  array-bracket-spacing: off
+  arrow-parens: off
+  brace-style: off
+  comma-dangle: off
+  function-paren-newline: off
+  indent: off
+  lines-between-class-members: off
+  max-len: off
+  no-mixed-operators: off
+  no-multi-spaces: off
+  object-curly-newline: off
+  one-var-declaration-per-line: off
+  quote-props: off
+
+  # For more formatting rules, see tools/formatting.eslintrc.yaml .
+
+
+  #
+  # ================================================================
+  # Naming.
+  #
+
+  camelcase: off
+
+  # Permit dangling underscores in class property names, to denote "private"
+  # fields. (These should be replaced with true private fields per the TC39
+  # class fields proposal [1], once that's available to us.)
+  #
+  # [1]: https://github.com/tc39/proposal-class-fields
+  no-underscore-dangle: ["error", { allowAfterThis: true } ]
+
+  # Disallow names with double underscores and trailing underscores.
+  id-match:
+    - error
+    - "^_?([a-zA-Z0-9$]+_?)*$"
+    - # Don't apply to property names; see comment on no-underscore-dangle.
+      properties: true
+
+      # Only apply to declarations, not uses.  That way a local override for
+      # a given name only needs to appear once, not at each use.
+      #
+      # The docs (https://eslint.org/docs/latest/rules/id-match) say this
+      # only applies to `var`, `function`, and `class` declarations, but in
+      # fact it seems to correctly apply to `const` and other declarations.
+      onlyDeclarations: true
+
+
+  #
+  # ================================================================
+  # Language syntax, operators, control flow.
+  #
+
+  # Repeal some rather absurd rules that make some code impossible to write in
+  # the most reasonable way.
+  no-else-return: off
+  no-await-in-loop: off # Promise.all is not always desirable
+  prefer-destructuring:
+    - error
+    - AssignmentExpression: {array: false, object: false}
+  no-constant-condition:
+    - error
+    - checkLoops: false
+
+  # new Promise(r => setTimeout(r, 1000));
+  # Certain other things could be nice to catch, but see
+  #   https://github.com/zulip/zulip-mobile/pull/5393#discussion_r883237343
+  no-promise-executor-return: off
+
+  # More noisy than helpful; see
+  #   https://github.com/zulip/zulip-mobile/pull/5393#discussion_r883233303
+  class-methods-use-this: off
+
+  # Likely-wrong code
+  no-unused-vars: [warn, {vars: local, args: none}]
+  # no-param-reassign seems well-intentioned... but fires on common uses
+  # of Array#reduce.  Too noisy.
+  no-param-reassign: off
+
+
+  #
+  # ================================================================
+  # Imports; plugin `import`.
+  #
+
+  # Issue with Flow enums:
+  #   https://github.com/import-js/eslint-plugin-import/issues/2073
+  # Turn off; seems like this rule's purpose is covered by Flow; discussion:
+  #   https://chat.zulip.org/#narrow/stream/243-mobile-team/topic/Flow.20enums/near/1406529
+  import/named: off # https://github.com/import-js/eslint-plugin-import/blob/v2.26.0/docs/rules/named.md
+
+  import/prefer-default-export: off
+
+  # Compare these two rules with the override below.
+  import/no-extraneous-dependencies:
+    - error
+    - devDependencies: ['**/__tests__/**/*.js', tools/**]
+  no-restricted-imports:
+    - error
+    - paths:
+      - name: 'react-native'
+        importNames: ['Clipboard']
+        message: 'Use Clipboard from @react-native-clipboard/clipboard instead.'
+      patterns:
+      - group: ['**/__tests__/**']
+      - group: ['/react-redux']
+        message: 'Use our own src/react-redux.js instead.'
+
+  import/no-cycle: error
+
+  import/export: off  # This is redundant with Flow, and buggy.
+
+
+  #
+  # ================================================================
+  # Jest; plugin `jest`.
+  #
+
+  # This rule could be useful if it fired only on new instances; but we
+  # don't have a way to do that, and it doesn't make sense to keep these
+  # out of the repo.
+  jest/no-disabled-tests: off
+  
+  # Only using string literals for test names, under the heading
+  # `titleMustBeString`, [1] is silly and should probably not be a
+  # thing [2]. We wish we could get all of this rule except that part.
+  # In fact, it's possible to ignore it *for describe blocks
+  # only* [3], but there are no plans to allow turning it off for
+  # `test` blocks.
+  # 
+  # [1] https://github.com/jest-community/eslint-plugin-jest/blob/main/docs/rules/valid-title.md
+  # [2] https://github.com/jest-community/eslint-plugin-jest/issues/203.
+  # [3] https://github.com/jest-community/eslint-plugin-jest/issues/470
+  jest/valid-title: off
+
+  # The docs for this rule [1] say that placing an `expect` call
+  # outside a `test` or `it` block (e.g., in a `beforeEach` or
+  # `afterEach`) means that the assertion isn't executed. Empirically,
+  # this seems just wrong [2], and there are a few places where we
+  # want to call `expect` in a `beforeEach` or `afterEach` to assert
+  # that multiple tests in the same file aren't interfering with each
+  # other by leaving bits of state lying around.
+  #
+  # [1] https://github.com/jest-community/eslint-plugin-jest/blob/main/docs/rules/no-standalone-expect.md
+  # [2] https://github.com/zulip/zulip-mobile/pull/4235#discussion_r489984717
+  jest/no-standalone-expect: off
+
+
+  #
+  # ================================================================
+  # React; plugin `react`.
+  #
+
+  # These two are workarounds to suppress no-unused-vars when the parser
+  # doesn't understand JSX. Our parser (hermes-eslint, set above) does, so
+  # they're unnecessary:
+  #   https://github.com/flow-typed/eslint-plugin-ft-flow/issues/33#issue-1274050123
+  react/jsx-uses-react: off # https://github.com/jsx-eslint/eslint-plugin-react/blob/v7.30.0/docs/rules/jsx-uses-react.md
+  react/jsx-uses-vars: off # https://github.com/jsx-eslint/eslint-plugin-react/blob/v7.30.0/docs/rules/jsx-uses-vars.md
+
+  react/jsx-filename-extension: off  # Like RN upstream, we call the files *.js.
+
+  react/destructuring-assignment: off  # The opposite is often much cleaner.
+  react/no-multi-comp: off  # This often just forces making code worse.
+  react/no-unused-prop-types: off  # This can be perfectly appropriate.
+
+  react/default-props-match-prop-types: off  # We handle this better with types.
+  react/prop-types: off  # We handle this better with types.
+  react/require-default-props: off  # We handle this better with types.
+
+  react/no-unstable-nested-components:
+    - error
+    # Avoid some regressions in clarity:
+    #   https://github.com/zulip/zulip-mobile/pull/5393#discussion_r893924345
+    - allowAsProps: true
+
+  # These could be good to fix.
+  react/prefer-stateless-function: off
+  react/sort-comp: off
+
+
+  #
+  # ================================================================
+  # React Native; plugin `react-native`.
+  #
+
+  # This plugin isn't included in the airbnb config, and it doesn't
+  # itself enable any rules by default, so this config is it.
+
+  # (From the docs as of 2020-03, these are the rules we'd like to use.
+  # Plugin disabled only because the rules are; bring it back when
+  # reviving either of them.)
+
+  # This is buggy on the `this.styles` pattern.
+  # react-native/no-unused-styles: error
+
+  # TODO eliminate these and enable.
+  # react-native/no-color-literals: error
+
+
+  #
+  # ================================================================
+  # Flow; plugin `ft-flow`.
+  #
+
+
+  # These two are workarounds to suppress no-undef and no-unused-vars,
+  # respectively, when the parser doesn't understand Flow types. Our parser
+  # (hermes-eslint, set above) does, so they're unnecessary:
+  #   https://github.com/flow-typed/eslint-plugin-ft-flow/issues/33#issue-1274050123
+  # In fact, linting breaks if I leave define-flow-type on with this parser:
+  #   TypeError: globalScope.__defineGeneric is not a function
+  # (See commit message for full error output.)
+  ft-flow/define-flow-type: off # https://github.com/flow-typed/eslint-plugin-ft-flow/tree/v2.0.1#define-flow-type
+  ft-flow/use-flow-type: off # https://github.com/flow-typed/eslint-plugin-ft-flow/tree/v2.0.1#use-flow-type
+
+  ft-flow/boolean-style: [error, boolean]
+  ft-flow/delimiter-dangle: off
+  ft-flow/no-dupe-keys: error
+  ft-flow/no-primitive-constructor-types: error
+  ft-flow/no-types-missing-file-annotation: error
+  ################# ft-flow/no-weak-types: error
+  # ft-flow/require-parameter-type: error
+  ft-flow/require-readonly-react-props: error
+  # ft-flow/require-return-type: [error, always, {annotateUndefined: never}]
+  ft-flow/require-valid-file-annotation: error
+  ft-flow/semi: [error, always]
+  ft-flow/space-before-generic-bracket: [error, never]
+  ft-flow/space-before-type-colon: [error, never]
+  # For more formatting rules, see tools/formatting.eslintrc.yaml.
+  ft-flow/type-id-match: [error, '^([A-Z][a-z0-9]+)+$']
+  ft-flow/union-intersection-spacing: [error, always]
+  ft-flow/valid-syntax: warn
+
+overrides:
+
+  #
+  # ================================================================
+  # Our test suite.
+  - files: ['**/__tests__/**', 'jest/jestSetup.js']
+    rules:
+      no-restricted-imports: off
+      no-import-assign: off # Jest mocking
+
+  #
+  # ================================================================
+  # Third-party code: redux-persist.
+  #
+  # We leave this code in the style we received it in.
+  - files: ['src/third/redux-persist/**']
+    rules:
+      # function declarations are made (we favor function expressions
+      # with `const`), so these functions may be used above the
+      # declaration because they are hoisted. Don't change them to our
+      # style without addressing this!
+      no-use-before-define: off
+
+      # a few variables already declared in upper scope; no bugs known
+      # to result from this
+      no-shadow: off
+
+  #
+  # ================================================================
+  # Third-party code: react-native.
+  #
+  # We leave this code in the style we received it in.
+  - files: ['src/third/react-native/**']
+    rules:
+      strict: off
+      import/order: off
+      import/first: off
+      object-curly-spacing: off
+      react/state-in-constructor: off
+      no-unused-vars: off
+      no-case-declarations: off
+      react/jsx-closing-bracket-location: off

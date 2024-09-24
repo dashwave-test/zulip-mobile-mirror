@@ -1,0 +1,19 @@
+parser: hermes-eslint
+plugins:
+  - ft-flow
+rules:
+  ft-flow/no-weak-types: error
+  ft-flow/require-parameter-type:
+    - error
+    - excludeArrowFunctions: true
+  ft-flow/require-return-type:
+    - error
+    - always
+    - excludeArrowFunctions: true
+      excludeMatching:
+        - "^render$"
+
+# Things that might also be good and we might do after the areas above
+# are clean or nearly clean:
+#   - change `excludeArrowFunctions` to "expressionsOnly", for both
+#     parameter and return types

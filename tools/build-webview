@@ -1,0 +1,202 @@
+#!/usr/bin/env bash
+set -eu
+unset CDPATH
+
+# tools/build-webview: WebView assets collection script.
+
+# CAVEAT EMENDATOR: Neither of the build systems have any visibility into this
+# script's dependencies -- it is run unconditionally, and must ensure on its own
+# that it performs as few actions as possible when nothing has changed.
+
+################################################################################
+# Common functions
+################################################################################
+
+# print usage message; do not die
+usage() {
+    cat >&2 <<EOF
+usage: $0 [ios | android] --destination DEST [--check-path-name]
+
+Build our webview assets, into directory DEST.
+
+This script is mainly for internal use by our build scripts.  They
+go on to use the contents of DEST as the webview-assets folder,
+which our message-list WebView relies on for its static assets.
+See src/webview/MessageList.js for details.
+
+With --check-path-name, make some defensive checks that DEST has
+the form expected from the actual build scripts.
+
+EOF
+}
+
+# print error and die
+err() {
+    echo -e "$0:" $'\e[31merror:\e[0m' "$@" >&2
+    exit 1;
+}
+
+# If verbose, format and log message.  First arg is format string.
+verbose_printf() {
+    if ! (( verbose )); then
+        return
+    fi
+    # shellcheck disable=SC2059 # format string from parameter
+    printf >&2 "%s: $1\n" "$0" "${@:2}"
+}
+
+################################################################################
+# Environment
+################################################################################
+
+# The project root, for absolutizing paths and accessing auxiliary scripts.
+# (Assumed to be one directory up from the script's own location.)
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
+
+# Ensure that we have access to a functional, modern `readlink`.
+. "$root"/tools/lib/ensure-coreutils.sh
+
+# Normalize and absolutize $root.
+#
+# This must return a name for the project root directory which coincides with
+# the one Gradle/Xcode will provide. This is unlikely to be a problem on Linux
+# or macOS, but has caused issues on Windows; see GitHub issue #3777.)
+root="$(readlink -m "$root")"
+readonly root
+
+################################################################################
+# Parameters
+################################################################################
+
+# Parse arguments. Sloppy, but sufficient for now.
+unset target
+unset dest
+check_path_name=0
+verbose=0
+while (( $# )); do
+    case "$1" in
+        --help|-h|help)
+            usage; exit 0;;
+        android|ios)
+            # no check for multiple nouns; oh well
+            target="$1"; shift;;
+        --destination)
+            # note: this doesn't permit an equals sign after `--destination`
+            shift; dest="$1"; shift;;
+        --check-path-name)
+            shift; check_path_name=1;;
+        --verbose|-v)
+            shift; verbose=1;;
+        *) usage; exit 2;;
+    esac
+done
+
+# All arguments are required; complain if any were omitted.
+if  [ -z "${target-}" ]; then
+    usage; exit 2
+elif [ -z "${dest-}" ]; then
+    usage; exit 2
+fi
+
+# Interpret destination path based on current directory...
+dest=$(realpath -m --relative-to="$root" "$dest")
+# ... then cd to the root.
+cd "$root"
+
+# Argument parsing has concluded; argument variables are no longer mutable.
+readonly target dest check_path_name verbose
+
+if (( check_path_name )); then
+    case "$target" in
+        ios)
+            if [ "$(uname)" != "Darwin" ]; then
+                err "iOS builds only supported on macOS";
+            fi
+
+            # $dest should be copied to `${bundle_root}/webview`.
+            #
+            # $dest itself must be specified twice in Xcode: once in the invocation
+            # of this script, and once in the "Copy Bundle Resources" step. If you
+            # change it, you'll need to change it in both places. (And here, of
+            # course.)
+            if [[ "$dest" != "ios/"* ]]; then
+                err "unexpected destination directory '$dest' (expected target in ios/)"
+            fi
+        ;;
+        android)
+            # $dest should be copied to `file:///android_asset/webview`.
+            #
+            # Gradle -- more precisely, the Android Gradle plugin -- is already
+            # configured to copy some directory from `build/` into the APK. We
+            # determine which directory that is in Gradle, and pass it here.
+            if [[ "$dest" != "android/app/build/"* ]]; then
+                err "unexpected destination directory '$dest' (expected target in android/app/build/)"
+            fi
+        ;;
+        *) err "impossible target $target";;
+    esac
+
+    # As implied above, the ultimate destination of these files should be a
+    # directory named `./webview` (relative to the platform-dependent asset
+    # root directory).
+    #
+    # The target directory basename should therefore be 'webview': both build
+    # systems will preserve the name they're given here.
+    if [[ "$dest" != *"/webview" ]]; then
+        err "unexpected destination directory '$dest' (expected basename \"webview\")"
+    fi
+fi  # if $check_path_name
+
+
+################################################################################
+# (Build and) sync
+################################################################################
+
+# Sync files from src to dest, reading rsync filter rules from stdin.
+#
+# Both src and dest should be directories.
+#
+# Files in dest not mentioned will be deleted by default.  A rule
+# like `-,r /foo` will override this to leave `foo` in place.
+#
+# For documentation on rsync filter rules, see `man rsync` or:
+#   https://dyn.manpages.debian.org/testing/rsync/rsync.1.en.html#FILTER_RULES
+sync() {
+    # "_dest" because bash's `readonly` means can't shadow with `local`
+    local src="$1" _dest="$2"
+    mkdir -p "${_dest}"
+    verbose_printf "RSYNC %q -> %q" "${src}" "${_dest}"
+    rsync -aR --no-D --delete --delete-excluded \
+          "${src}/./" "${_dest}/." \
+          --filter='. -'
+}
+
+# Copy over files from KaTeX.
+sync "node_modules/katex/dist" "${dest}/katex" <<EOF
++ /katex.min.css
+
+# The KaTeX JS renders LaTeX code into HTML and MathML.
+# Our webview already has HTML and MathML, and just needs to style it.
+#+ /katex.min.js
+
+# The woff2 font format is preferred for browsers that support it,
+# which include Chrome 36+ and Mobile Safari 10+.  So that's all we need.
++ /fonts/
++ /fonts/*.woff2
+
+- *
+EOF
+
+# Copy over our own files.
+sync "src/webview/static" "${dest}" <<EOF
+# Leave alone the katex directory we just made.
+-,r /katex
+
++ /base.css
++ /images/
++ /images/follow.svg
++ /images/loader-black.svg
++ /images/loader-white.svg
++ /images/play_button.svg
+- *
+EOF

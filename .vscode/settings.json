@@ -1,0 +1,15 @@
+// Workspace Settings for the zulip-mobile repo.
+{
+    // Disable TS-centric validation.  We'll rely on ESLint for general validation.
+    // See https://github.com/Microsoft/vscode/issues/15171
+    "javascript.validate.enable": false,
+
+    // Makes IntelliSense work with Flow.  See
+    // https://github.com/Microsoft/vscode-react-native/blob/master/doc/intellisense.md .
+    "flow.useNPMPackagedFlow": true,
+
+    "[javascript]": {
+        // Format JS code with prettier-eslint.
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+}

@@ -1,0 +1,17 @@
+# This should be the only .eslintignore file in our tree.
+# See apply_eslintignore in tools/test.
+
+# These are purely type definitions, no runtime code.  Most of them
+# are third-party code, too, so naturally don't match our style.
+**/flow-typed/**
+types/react-intl.js.flow
+types/@react-native-community/netinfo/**
+types/@sentry/react-native.js.flow
+types/expo-web-browser/**
+types/react-native-webview.js.flow
+
+# These are type-tests, made up of code that gets type-checked but
+# never actually run.  They're naturally full of dead code which
+# ESLint would complain about; and because the code never runs, other
+# things it might complain about don't really matter anyway.
+**/__flow-tests__/**

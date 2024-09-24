@@ -1,0 +1,318 @@
+#!/usr/bin/env bash
+
+# Careful! `set -e` doesn't do everything you'd think it does. In
+# fact, we don't get its benefit in any of the `run_foo` functions.
+#
+# This is because it has an effect only when it can exit the whole shell.
+# (Its full name is `set -o errexit`, and it means "exit" literally.)  See:
+#   https://www.gnu.org/software/bash/manual/bash.html#The-Set-Builtin
+#
+# When one test suite fails, we want to go on to run the other suites, so
+# we use `||` to prevent the whole script from exiting there, and that
+# defeats `set -e`.
+#
+# For now our workaround is to put `|| return` in the `run_foo` just
+# after each nontrivial command that isn't the final command in the
+# function.
+set -e
+
+this_dir=${BASH_SOURCE[0]%/*}
+. "${this_dir}"/lib/eslintignore.sh
+
+
+## CLI PARSING
+
+default_suites=(native flow lint jest prettier deps tsflower)
+extra_suites=(
+    intl  # Takes several seconds to run.
+)
+
+usage() {
+    cat >&2 <<EOF
+usage: tools/test [OPTION]... [SUITE]...
+
+Run our tests.
+
+By default, run only on files changed in this branch as found by
+\`tools/git changed-files \$(tools/git base)\`.
+
+By default, run ${#default_suites[@]} suite(s):
+  ${default_suites[*]}
+and skip ${#extra_suites[@]} suite(s):
+  ${extra_suites[*]}
+
+What tests to run:
+  --all-files
+              Run on all files, not only changed files.
+  --diff COMMIT
+              Run only on files that differ from the given commit.
+              (E.g., \`--diff @\` for files with uncommitted changes;
+              \`--diff @~10\` for files changed in last 10 commits; or see
+              \`git help revisions\` for many more ways to name a commit.)
+  --platform <ios|android|both|sloppy>
+              Run tests as if on iOS, or Android, or both. The
+              default, "sloppy", takes a shortcut in some suites,
+              so the tests run faster but full coverage of both
+              platforms isn't guaranteed. Specifically, "sloppy"
+              will run both Android and iOS native tests, but will
+              run Jest tests on only one platform (iOS). This is
+              usually fine, because the vast majority of our Jest
+              tests don't depend meaningfully on the platform.
+  --all       In the given suites, run all tests on all files, equivalently
+              to \`--all-files --platform both\`. If no list of suites was
+              specified, run all suites.
+
+Extra things to do:
+  --coverage  Collect test-coverage information.  Only meaningful
+              with --all.
+  --fix       Fix issues found, where possible.
+EOF
+    exit 2
+}
+
+opt_coverage=
+opt_files=branch
+opt_platform=sloppy
+opt_all=
+opt_fix=
+opt_suites=()
+while (( $# )); do
+    case "$1" in
+        --coverage) opt_coverage=1; shift;;
+        --diff) shift; opt_files=diff:"$1"; shift;;
+        --all-files) opt_files=all; shift;;
+        --platform)
+            shift;
+            case "$1" in
+                ios|android|both|sloppy) opt_platform="$1";;
+                *) usage;;
+            esac
+            shift
+            ;;
+        --all) opt_files=all; opt_platform=both; opt_all=1; shift;;
+        --fix) opt_fix=1; shift;;
+        native|flow|lint|jest|prettier|deps|tsflower|intl)
+            opt_suites+=("$1"); shift;;
+        *) usage;;
+    esac
+done
+
+if [ -z "$opt_suites" ]; then
+    if [ -n "${opt_all}" ]; then
+        opt_suites=( "${default_suites[@]}" "${extra_suites[@]}" )
+    else
+        opt_suites=( "${default_suites[@]}" )
+    fi
+fi
+
+files_base_commit=
+case "$opt_files" in
+    all) ;;
+    branch) files_base_commit="$(tools/git base)";;
+    diff:*) files_base_commit="${opt_files#diff:}";;
+esac
+
+
+## EXECUTION
+
+rootdir=$(git rev-parse --show-toplevel)
+cd "$rootdir"
+
+PATH=node_modules/.bin:"$PATH"
+
+# Intersect $opt_files with the set of our JS files in src/.
+#
+# Prints a list of newline-terminated paths; either files, or
+# directories meaning their whole subtrees.
+files_js() {
+    case "$opt_files" in
+        all)
+            echo src/
+            ;;
+        branch | diff:*)
+            tools/git changed-files "${files_base_commit}" -- 'src/*.js'
+            ;;
+    esac
+}
+
+# True just if $files intersects the given set of paths.
+files_check() {
+    case "$opt_files" in
+        all)
+            ;;
+        branch | diff:*)
+            ! git diff --quiet "${files_base_commit}" "$@"
+            ;;
+    esac
+}
+
+run_native_android() {
+    files_check android/ \
+        || return 0
+
+    tools/gradle -q :app:assembleDebug :app:assembleDebugUnitTest \
+        :app:bundleDebug || return
+
+    # The `-q` suppresses noise from warnings about obsolete build config
+    # in our dependencies from the React Native ecosystem.
+    # But it also suppresses the names of tests that failed.
+    # So on failure, rerun without it.
+    tools/gradle -q :app:testDebugUnitTest \
+        || tools/gradle :app:testDebugUnitTest
+}
+
+run_native_ios() {
+    :
+    # TODO: At least make an iOS build.
+}
+
+run_native() {
+    if [[ $opt_platform == android || $opt_platform == both || $opt_platform == sloppy ]]; then
+        echo 'Running Android native tests...';
+        run_native_android || return
+    fi
+
+    if [[ $opt_platform == ios || $opt_platform == both || $opt_platform == sloppy ]]; then
+        # TODO: Run if on macOS; otherwise, echo that these tests are
+        # skipped because they can't be run.
+
+        # echo 'Running iOS native tests...';
+        run_native_ios || return
+    fi
+}
+
+run_lint() {
+    local files
+    files=( $(files_js) )
+    files=( $(apply_eslintignore "${files[@]}") )
+    (( ${#files[@]} )) || return 0
+    eslint ${opt_fix:+--fix} --report-unused-disable-directives --max-warnings=0 "${files[@]}"
+}
+
+run_jest() {
+    # Unlike some others, this inspects "$opt_files" for itself.
+    local jest_args=()
+    case "$opt_files" in
+        all)
+            if [ -n "$opt_coverage" ]; then
+                jest_args+=( --coverage )
+            fi
+            ;;
+        branch)
+            jest_args+=( --changedSince "$(tools/git upstream-ref)" )
+            ;;
+        diff:*)
+            local file_list
+            file_list=( $(files_js) )
+            (( ${#file_list[@]} )) || return 0
+            jest_args+=( --findRelatedTests "${file_list[@]}" )
+            ;;
+    esac
+
+    local platforms=( ios android )
+    case "$opt_platform" in
+        ios) jest_args+=( --selectProjects ios );;
+        android) jest_args+=( --selectProjects android );;
+        both) jest_args+=( --selectProjects ios android );;
+
+        # This is where `sloppy` is sloppy: we choose a platform randomly, so
+        # the tests will run faster, but at the expense of a (relatively small)
+        # loss of coverage.
+        sloppy) jest_args+=( --selectProjects "${platforms[RANDOM%2]}" );;
+    esac
+
+    jest "${jest_args[@]}"
+}
+
+run_prettier() {
+    local patterns
+    case "$opt_files" in
+        all)
+            # The prettier-eslint CLI won't take directories;
+            # but it's happy to take glob patterns, and supports `**`.
+            patterns=( {src,types}/'**/*'.js{,.flow} )
+            ;;
+        branch | diff:*)
+            patterns=(
+                $(tools/git changed-files "${files_base_commit}" \
+                      -- {src,types}/\*.js{,.flow})
+            )
+            ;;
+    esac
+    (( ${#patterns[@]} )) || return 0
+    # Workaround for https://github.com/prettier/prettier-eslint-cli/issues/205
+    patterns=( "${patterns[@]/#/$rootdir/}" )
+    prettier-eslint \
+       ${opt_fix:+--write} \
+      --list-different \
+      --eslint-config-path "${rootdir}"/tools/formatting.eslintrc.yaml \
+      "${patterns[@]}"
+}
+
+run_deps() {
+    files_check package.json yarn.lock \
+        || return 0
+
+    if ! yarn-deduplicate --fail --list; then
+        cat >&2 <<EOF
+
+Found duplicate dependencies in yarn.lock which could be dedup'd.
+Run:
+
+  yarn yarn-deduplicate && yarn
+EOF
+        return 1
+    fi
+}
+
+run_tsflower() {
+    # This suite depends on:
+    #  * the tools/tsflower script
+    #  * the type definitions in types/**/*.js.flow
+    #  * the patches in types/patches/*.patch
+    #  * the versions of `tsflower` and of libraries it processes
+    files_check tools/tsflower types/ yarn.lock \
+        || return 0
+
+    # NB this suite will fail (with a reasonable error message) if
+    # there are any local Git changes, because it can't do its work
+    # without making changes to the worktree.  (Short of making a
+    # temporary worktree somewhere, anyway; but that'd probably mean a
+    # slow test suite.)  Hopefully in normal development this is fine:
+    # it usually won't run because of files_check; if it does, the
+    # error message comes fast and is short, and doesn't get in the
+    # way of the other suites doing their jobs.
+    tools/tsflower check
+}
+
+run_intl() {
+    tools/check-messages-en
+}
+
+failed=()
+for suite in "${opt_suites[@]}"; do
+    echo "Running $suite..."
+    case "$suite" in
+        native)   run_native ;;
+        flow)     flow ;;
+        lint)     run_lint ;;
+        jest)     run_jest ;;
+        prettier) run_prettier ;;
+        deps)     run_deps ;;
+        tsflower) run_tsflower ;;
+        intl)     run_intl ;;
+    esac || failed+=($suite)
+done
+
+if [ -n "$failed" ]; then
+    cat >&2 <<EOF
+
+FAILED: ${failed[*]}
+
+To rerun the suites that failed, run:
+  $ tools/test ${failed[*]}
+EOF
+    exit 1
+fi
+
+echo "Passed!"

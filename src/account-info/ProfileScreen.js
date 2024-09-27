@@ -145,6 +145,7 @@ export default function ProfileScreen(props: Props): Node {
             label="Invisible mode"
             /* $FlowIgnore[incompatible-cast] - Only null when FL is <89;
                see comment on RealmState['presenceEnabled'] */
+
             value={!(presenceEnabled: boolean)}
             onValueChange={(newValue: boolean) => {
               api.updateUserSettings(auth, { presence_enabled: !newValue }, zulipFeatureLevel);

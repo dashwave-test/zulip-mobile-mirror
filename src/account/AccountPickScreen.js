@@ -24,6 +24,7 @@ import { getAccounts } from '../directSelectors';
 import { useNotificationReportsByIdentityKey } from '../settings/NotifTroubleshootingScreen';
 import { keyOfIdentity } from './accountMisc';
 import type { NotificationReport } from '../settings/NotifTroubleshootingScreen';
+import { getRealmName, getActiveImageEmoji } from '../directSelectors';
 
 /** The data needed for each item in the list-of-accounts UI. */
 export type AccountStatus = {|
@@ -36,6 +37,9 @@ export type AccountStatus = {|
   +notificationReport: { +problems: NotificationReport['problems'], ... },
 
   +silenceServerPushSetupWarnings: boolean,
+
+  +realmName: string,
+  +realmIcon: string,
 |};
 
 /**
@@ -46,6 +50,8 @@ export type AccountStatus = {|
 function useAccountStatuses(): $ReadOnlyArray<AccountStatus> {
   const accounts = useGlobalSelector(getAccounts);
   const notificationReportsByIdentityKey = useNotificationReportsByIdentityKey();
+  const realmNames = useGlobalSelector(state => state.realm.realmName);
+  const realmIcons = useGlobalSelector(state => state.realm.avatarUrl);
 
   return accounts.map(({ realm, email, apiKey, silenceServerPushSetupWarnings }) => {
     const notificationReport = notificationReportsByIdentityKey.get(
@@ -53,12 +59,17 @@ function useAccountStatuses(): $ReadOnlyArray<AccountStatus> {
     );
     invariant(notificationReport, 'AccountPickScreen: expected notificationReport for identity');
 
+    const realmName = realmNames.get(realm.toString()) || '';
+    const realmIcon = getActiveImageEmoji(email, realm.toString());
+
     return {
       realm,
       email,
       isLoggedIn: apiKey !== '',
       notificationReport,
       silenceServerPushSetupWarnings,
+      realmName,
+      realmIcon,
     };
   });
 }

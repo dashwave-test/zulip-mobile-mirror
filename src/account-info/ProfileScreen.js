@@ -11,7 +11,6 @@ import type { RouteProp } from '../react-navigation';
 import type { MainTabsNavigationProp } from '../main/MainTabsScreen';
 import { createStyleSheet } from '../styles';
 import { useDispatch, useSelector } from '../react-redux';
-import ZulipButton from '../common/ZulipButton';
 import { logout } from '../account/logoutActions';
 import { tryStopNotifications } from '../notification/notifTokens';
 import AccountDetails from './AccountDetails';
@@ -27,39 +26,32 @@ import * as api from '../api';
 import { identityOfAccount } from '../account/accountMisc';
 import NavRow from '../common/NavRow';
 import { emojiTypeFromReactionType } from '../emoji/data';
+import TextRow from '../common/TextRow';
 
 const styles = createStyleSheet({
   buttonRow: {
     flexDirection: 'row',
     marginHorizontal: 8,
   },
-  button: {
-    flex: 1,
-    margin: 8,
-  },
 });
 
-function ProfileButton(props: {| +ownUserId: UserId |}) {
+function ProfileButton({ ownUserId }: {| +ownUserId: UserId |}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Full profile"
+    <NavRow
+      title="Full profile"
       onPress={() => {
-        navigation.push('account-details', { userId: props.ownUserId });
+        navigation.push('account-details', { userId: ownUserId });
       }}
     />
   );
 }
 
-function SettingsButton(props: {||}) {
+function SettingsButton() {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Settings"
+    <NavRow
+      title="Settings"
       onPress={() => {
         navigation.push('settings');
       }}
@@ -67,13 +59,11 @@ function SettingsButton(props: {||}) {
   );
 }
 
-function SwitchAccountButton(props: {||}) {
+function SwitchAccountButton() {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Switch account"
+    <NavRow
+      title="Switch account"
       onPress={() => {
         navigation.push('account-pick');
       }}
@@ -81,16 +71,14 @@ function SwitchAccountButton(props: {||}) {
   );
 }
 
-function LogoutButton(props: {||}) {
+function LogoutButton() {
   const dispatch = useDispatch();
   const _ = useContext(TranslationContext);
   const account = useSelector(getAccount);
   const identity = identityOfAccount(account);
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Log out"
+    <NavRow
+      title="Log out"
       onPress={() => {
         showConfirmationDialog({
           destructive: true,
@@ -157,32 +145,6 @@ export default function ProfileScreen(props: Props): Node {
             label="Invisible mode"
             /* $FlowIgnore[incompatible-cast] - Only null when FL is <89;
                see comment on RealmState['presenceEnabled'] */
+
             value={!(presenceEnabled: boolean)}
-            onValueChange={(newValue: boolean) => {
-              api.updateUserSettings(auth, { presence_enabled: !newValue }, zulipFeatureLevel);
-            }}
-          />
-        ) : (
-          // TODO(server-6.0): Remove.
-          <SwitchRow
-            label="Set yourself to away"
-            value={awayStatus}
-            onValueChange={(away: boolean) => {
-              api.updateUserStatus(auth, { away });
-            }}
-          />
-        )}
-        <View style={styles.buttonRow}>
-          <ProfileButton ownUserId={ownUser.user_id} />
-        </View>
-        <View style={styles.buttonRow}>
-          <SettingsButton />
-        </View>
-        <View style={styles.buttonRow}>
-          <SwitchAccountButton />
-          <LogoutButton />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+            on

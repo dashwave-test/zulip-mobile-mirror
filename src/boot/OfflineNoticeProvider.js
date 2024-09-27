@@ -212,23 +212,25 @@ export function OfflineNoticeProvider(props: ProviderProps): Node {
     // another app.)
 
     if (shouldShowUncertaintyNotice && !haveAnnouncedUncertain.current) {
-      // TODO(react-native-68): Use announceForAccessibilityWithOptions to
-      //   queue this behind any in-progress announcements
-      AccessibilityInfo.announceForAccessibility(_('Zulip’s Internet connection is uncertain.'));
+      AccessibilityInfo.announceForAccessibilityWithOptions(_('Zulip’s Internet connection is uncertain.'), {
+        queue: true,
+      });
       haveAnnouncedUncertain.current = true;
     }
 
     if (isOnline === false && (!haveAnnouncedOffline.current || haveAnnouncedUncertain.current)) {
-      AccessibilityInfo.announceForAccessibility(_('Zulip is offline.'));
+      AccessibilityInfo.announceForAccessibilityWithOptions(_('Zulip is offline.'), {
+        queue: true,
+      });
       haveAnnouncedOffline.current = true;
       haveAnnouncedUncertain.current = false;
     } else if (
       isOnline === true
       && (haveAnnouncedOffline.current || haveAnnouncedUncertain.current)
     ) {
-      // TODO(react-native-68): Use announceForAccessibilityWithOptions to
-      //   queue this behind any in-progress announcements
-      AccessibilityInfo.announceForAccessibility(_('Zulip is online.'));
+      AccessibilityInfo.announceForAccessibilityWithOptions(_('Zulip is online.'), {
+        queue: true,
+      });
       haveAnnouncedOffline.current = false;
       haveAnnouncedUncertain.current = false;
     }
@@ -426,3 +428,4 @@ export function OfflineNoticePlaceholder(props: PlaceholderProps): Node {
     </>
   );
 }
+

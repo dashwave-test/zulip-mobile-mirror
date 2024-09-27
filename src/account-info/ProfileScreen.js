@@ -147,29 +147,4 @@ export default function ProfileScreen(props: Props): Node {
                see comment on RealmState['presenceEnabled'] */
 
             value={!(presenceEnabled: boolean)}
-            onValueChange={(newValue: boolean) => {
-              api.updateUserSettings(auth, { presence_enabled: !newValue }, zulipFeatureLevel);
-            }}
-          />
-        ) : (
-          // TODO(server-6.0): Remove.
-          <SwitchRow
-            label="Set yourself to away"
-            value={awayStatus}
-            onValueChange={(away: boolean) => {
-              api.updateUserStatus(auth, { away });
-            }}
-          />
-        )}
-        <ProfileButton ownUserId={ownUser.user_id} />
-        <SettingsButton />
-        <TextRow text="Account actions" />
-        <View style={styles.buttonRow}>
-          <SwitchAccountButton />
-          <LogoutButton />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
+            on

@@ -65,7 +65,7 @@ const useMessagesWithFetch = args => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
 
-  const eventQueueId = useSelector(state => getSession(state).eventQueueId);
+  const eventQueueId = useSelector(state => getSession(state).eventQueueId); 
   const loading = useSelector(getLoading);
   const fetching = useSelector(state => getFetchingForNarrow(state, narrow));
   const isFetching = fetching.older || fetching.newer || loading;
@@ -111,7 +111,11 @@ const useMessagesWithFetch = args => {
   //   isFetching false, even though the fetch effect will cause a rerender
   //   with isFetching true.  It'd be nice to avoid that.
   const nothingKnown = messages.length === 0 && !caughtUp.older && !caughtUp.newer;
-  useConditionalEffect(scheduleFetch, nothingKnown);
+  useConditionalEffect(() => {
+    if (nothingKnown && !fetching.older && !fetching.newer && !loading) {
+      scheduleFetch();
+    }
+  }, [nothingKnown, fetching.older, fetching.newer, loading]);
 
   // On first mount, fetch.  (This also makes a fetch no longer scheduled,
   // so the if-scheduled fetch below doesn't also fire.)
@@ -149,7 +153,7 @@ export default function ChatScreen(props: Props): Node {
   });
 
   const showMessagePlaceholders = messages.length === 0 && isFetching;
-  const sayNoMessages = messages.length === 0 && !isFetching;
+  const sayNoMessages = messages.length === 0 && !isFetching && !fetching.older && !fetching.newer && loading;  // Modified line
 
   const showComposeBox = showComposeBoxOnNarrow(narrow) && !showMessagePlaceholders;
   const composeBoxRef = React.useRef<ComposeBoxImperativeHandle | null>(null);
@@ -251,7 +255,7 @@ export default function ChatScreen(props: Props): Node {
           return <InvalidNarrow narrow={narrow} />;
         } else if (fetchError !== null) {
           return <FetchError narrow={narrow} error={fetchError} />;
-        } else if (sayNoMessages) {
+        } else if (sayNoMessages && !fetching.older && !fetching.newer && !loading) { // Modified line
           return <NoMessages narrow={narrow} />;
         } else {
           return (
@@ -288,3 +292,5 @@ export default function ChatScreen(props: Props): Node {
     </KeyboardAvoider>
   );
 }
+
+

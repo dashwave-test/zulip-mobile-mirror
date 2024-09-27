@@ -44,8 +44,6 @@ type Props = $ReadOnly<{|
   iconSize: number,
   offersSubscribeButton?: boolean,
   extraPaddingEnd?: number,
-  // These stream names are here for a mix of good reasons and (#3918) bad ones.
-  // To audit all uses, change `name` to write-only (`-name:`), and run Flow.
   onPress: ({ stream_id: number, name: string, ... }) => void,
   onSubscribeButtonPressed?: ({ stream_id: number, name: string, ... }, newValue: boolean) => void,
 |}>;
@@ -245,3 +243,4 @@ export default function StreamItem(props: Props): Node {
     </Touchable>
   );
 }
+

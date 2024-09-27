@@ -245,3 +245,4 @@ export default function StreamItem(props: Props): Node {
     </Touchable>
   );
 }
+

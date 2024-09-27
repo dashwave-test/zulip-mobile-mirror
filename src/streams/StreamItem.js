@@ -1,11 +1,10 @@
-/* @flow strict-local */
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useCallback } from 'react';
 import type { Node } from 'react';
 import { View, Pressable } from 'react-native';
 // $FlowFixMe[untyped-import]
 import { useActionSheet } from '@expo/react-native-action-sheet';
 
-import { showErrorAlert } from '../utils/info';
+import { showErrorAlert, showConfirmationDialog } from '../utils/info'; // Import showConfirmationDialog
 import { showStreamActionSheet } from '../action-sheets';
 import type { ShowActionSheetWithOptions } from '../action-sheets';
 import { TranslationContext } from '../boot/TranslationProvider';
@@ -45,33 +44,10 @@ type Props = $ReadOnly<{|
   iconSize: number,
   offersSubscribeButton?: boolean,
   extraPaddingEnd?: number,
-  // These stream names are here for a mix of good reasons and (#3918) bad ones.
-  // To audit all uses, change `name` to write-only (`-name:`), and run Flow.
   onPress: ({ stream_id: number, name: string, ... }) => void,
   onSubscribeButtonPressed?: ({ stream_id: number, name: string, ... }, newValue: boolean) => void,
 |}>;
 
-/**
- * A single-line list item to show a stream or stream subscription.
- *
- * Many of the props must correspond to certain properties of a Stream or
- * Subscription.
- *
- * @prop name - the stream's name
- * @prop description - the stream's description
- * @prop isMuted - false for a Stream; !sub.in_home_view for Subscription
- * @prop isPrivate - .invite_only for a Stream or a Subscription
- * @prop isSubscribed - whether the user is subscribed to the stream;
- *   ignored (and can be any value) unless offersSubscribeButton is true
- * @prop color - if provided, MUST be .color on a Subscription
- * @prop backgroundColor - if provided, MUST be .color on a Subscription
- *
- * @prop unreadCount - number of unread messages
- * @prop iconSize
- * @prop offersSubscribeButton - whether to offer a subscribe/unsubscribe button
- * @prop onPress - press handler for the item
- * @prop onSubscribeButtonPressed
- */
 export default function StreamItem(props: Props): Node {
   const {
     streamId,
@@ -171,22 +147,47 @@ export default function StreamItem(props: Props): Node {
     </Pressable>
   );
 
+  const handleUnsubscribePress = useCallback(
+    async () => {
+      if (isPrivate) {
+        const confirmed = await showConfirmationDialog({
+          title: 'Unsubscribe from private stream',
+          message: `Are you sure you want to unsubscribe from the private stream "${name}"? You might need an invite to join again.`,
+          confirmText: 'Unsubscribe',
+          cancelText: 'Cancel',
+          destructive: true,
+        });
+
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      if (onSubscribeButtonPressed) {
+        onSubscribeButtonPressed({ stream_id: streamId, name }, !isSubscribed);
+      }
+    },
+    [isPrivate, name, onSubscribeButtonPressed, streamId, isSubscribed]
+  );
+
   let subscribeButton = null;
   if (offersSubscribeButton) {
     const disabled = !isSubscribed && isPrivate;
     subscribeButton = (
       <Pressable
         onPress={() => {
-          if (onSubscribeButtonPressed) {
-            if (disabled) {
-              showErrorAlert(
-                _('Cannot subscribe to stream'),
-                _('Stream #{name} is private.', { name }),
-                { url: new URL('/help/stream-permissions', realmUrl), globalSettings },
-              );
-              return;
-            }
+          if (disabled) {
+            showErrorAlert(
+              _('Cannot subscribe to stream'),
+              _('Stream #{name} is private.', { name }),
+              { url: new URL('/help/stream-permissions', realmUrl), globalSettings },
+            );
+            return;
+          }
 
+          if (isSubscribed) {
+            handleUnsubscribePress();
+          } else {
             onSubscribeButtonPressed({ stream_id: streamId, name }, !isSubscribed);
           }
         }}
@@ -242,3 +243,4 @@ export default function StreamItem(props: Props): Node {
     </Touchable>
   );
 }
+

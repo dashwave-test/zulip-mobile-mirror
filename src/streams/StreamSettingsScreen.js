@@ -20,6 +20,7 @@ import * as api from '../api';
 import getIsNotificationEnabled from './getIsNotificationEnabled';
 import { roleIsAtLeast } from '../permissionSelectors';
 import { Role } from '../api/permissionsTypes';
+import { showConfirmationDialog } from '../utils/info';
 
 type Props = $ReadOnly<{|
   navigation: AppNavigationProp<'stream-settings'>,
@@ -64,8 +65,27 @@ export default function StreamSettingsScreen(props: Props): Node {
   }, [auth, stream]);
 
   const handlePressUnsubscribe = useCallback(() => {
-    // This still uses a stream name (#3918) because the API method does; see there.
-    api.subscriptionRemove(auth, [stream.name]);
+    const confirmUnsubscribe = async () => {
+      const confirmed = await showConfirmationDialog({
+        title: 'Unsubscribe',
+        message: `Are you sure you want to unsubscribe from the private stream "${stream.name}"? You might need an invite to join again.`,
+        confirmText: 'Unsubscribe',
+        cancelText: 'Cancel',
+        destructive: true,
+      });
+
+      if (confirmed) {
+        // This still uses a stream name (#3918) because the API method does; see there.
+        api.subscriptionRemove(auth, [stream.name]);
+      }
+    };
+
+    if (stream.invite_only) {
+      confirmUnsubscribe();
+    } else {
+      // This still uses a stream name (#3918) because the API method does; see there.
+      api.subscriptionRemove(auth, [stream.name]);
+    }
   }, [auth, stream]);
 
   const handleToggleStreamPushNotification = useCallback(() => {

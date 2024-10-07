@@ -7,7 +7,7 @@ import { apiPost } from '../apiFetch';
 export default async (
   auth: Auth,
   params: {|
-    type: 'private' | 'stream',
+    type: 'direct' | 'private' | 'stream',
     to: string,
     // TODO(server-2.0): Say "topic", not "subject"
     subject?: string,
@@ -17,7 +17,7 @@ export default async (
   |},
 ): Promise<ApiResponse> =>
   apiPost(auth, 'messages', {
-    type: params.type,
+    type: params.type === 'private' ? 'direct' : params.type,
     to: params.to,
     subject: params.subject,
     content: params.content,

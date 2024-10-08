@@ -1,3 +1,4 @@
+
 /* @flow strict-local */
 import { BRAND_COLOR } from './constants';
 
@@ -6,7 +7,7 @@ export const statics = {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between', // Adjust to more effectively distribute components
   },
   navSubtitle: {
     fontSize: 13,
@@ -17,3 +18,4 @@ export const statics = {
     fontSize: 20,
   },
 };
+

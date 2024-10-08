@@ -6,7 +6,8 @@ export const statics = {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between', // Changed justifyContent to 'space-between'
+    paddingHorizontal: 16, // Added padding for consistency and spacing
   },
   navSubtitle: {
     fontSize: 13,

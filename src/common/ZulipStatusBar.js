@@ -1,68 +1,26 @@
 /* @flow strict-local */
-
 import React from 'react';
-import type { Node } from 'react';
-import { Platform, StatusBar, useColorScheme } from 'react-native';
-// $FlowFixMe[untyped-import]
-import Color from 'color';
+import { StatusBar } from 'react-native';
+import { useTheme } from '../styles';
 
-import type { ThemeName } from '../types';
-import { useGlobalSelector } from '../react-redux';
-import { foregroundColorFromBackground } from '../utils/color';
-import { getGlobalSession, getGlobalSettings } from '../selectors';
-import { getThemeToUse } from '../settings/settingsSelectors';
-
-type BarStyle = React$ElementConfig<typeof StatusBar>['barStyle'];
-
-export const getStatusBarColor = (backgroundColor: string | void, theme: ThemeName): string =>
-  backgroundColor ?? (theme === 'dark' ? 'hsl(212, 28%, 18%)' : 'white');
-
-export const getStatusBarStyle = (statusBarColor: string): BarStyle =>
-  foregroundColorFromBackground(statusBarColor) === 'white' /* force newline */
-    ? 'light-content'
-    : 'dark-content';
-
-type Props = $ReadOnly<{|
-  backgroundColor?: string | void,
+type Props = {|
+  backgroundColor?: string,
   hidden?: boolean,
-|}>;
+|};
 
-/**
- * Renders an RN `StatusBar` with appropriate props, and nothing else.
- *
- * Specifically, it controls the status bar's hidden/visible state and
- * its background color in platform-specific ways. Omitting `hidden`
- * will make the status bar visible, and omitting `backgroundColor`
- * will give a theme-appropriate default.
- *
- * `StatusBar` renders `null` every time. Therefore, don't look to
- * `ZulipStatusBar`'s position in the hierarchy of `View`s to affect
- * the layout in any way.
- *
- * That being said, hiding and un-hiding the status bar can change the
- * size of the top inset. E.g., on an iPhone without the "notch", the
- * top inset grows to accommodate a visible status bar, and shrinks to
- * give more room to the app's content when the status bar is hidden.
- */
-export default function ZulipStatusBar(props: Props): Node {
-  const { hidden = false } = props;
-  const theme = useGlobalSelector(state => getGlobalSettings(state).theme);
-  const osScheme = useColorScheme();
-  const themeToUse = getThemeToUse(theme, osScheme);
+export default function ZulipStatusBar(props: Props) {
+  const { backgroundColor = 'white', hidden = false } = props;
+  const theme = useTheme();
 
-  const orientation = useGlobalSelector(state => getGlobalSession(state).orientation);
-  const backgroundColor = props.backgroundColor;
-  const statusBarColor = getStatusBarColor(backgroundColor, themeToUse);
+  const statusBarStyle = (theme === 'dark') ? 'light-content' : 'dark-content';
+  const resolvedBackgroundColor = backgroundColor !== undefined ? backgroundColor : theme === 'dark' ? 'hsl(222, 99%, 69%)' : 'white';
 
   return (
-    orientation === 'PORTRAIT' && (
-      <StatusBar
-        animated
-        showHideTransition="slide"
-        hidden={hidden && Platform.OS !== 'android'}
-        backgroundColor={Color(statusBarColor).darken(0.1).hsl().string()}
-        barStyle={getStatusBarStyle(statusBarColor)}
-      />
-    )
+    <StatusBar
+      backgroundColor={resolvedBackgroundColor}
+      barStyle={statusBarStyle}
+      hidden={hidden}
+    />
   );
 }
+

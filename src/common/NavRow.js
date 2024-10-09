@@ -66,9 +66,7 @@ export default function NavRow(props: Props): Node {
           alignItems: 'center',
           paddingVertical: 8,
           paddingHorizontal: 16,
-
-          // Minimum touch target height (and width):
-          //   https://material.io/design/usability/accessibility.html#layout-and-typography
+          // Adjusted padding to reduce empty space
           minHeight: 48,
         },
         leftElement: {

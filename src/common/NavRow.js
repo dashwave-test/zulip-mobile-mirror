@@ -124,7 +124,11 @@ export default function NavRow(props: Props): Node {
 
         <View style={styles.textWrapper}>
           <ZulipTextIntl style={styles.title} text={title} />
-          {subtitle !== undefined && <ZulipTextIntl style={styles.subtitle} text={subtitle} />}
+
+          {/* Adjusted subtitle to improve navigation bar's space usage */}
+          {subtitle !== undefined && (
+            <ZulipTextIntl style={styles.subtitle} text={subtitle} numberOfLines={1} />
+          )}
         </View>
         <View style={globalStyles.rightItem}>
           {type === 'nested' ? (

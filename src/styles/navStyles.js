@@ -6,14 +6,14 @@ export const statics = {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center', // Changed to 'center' to remove empty space
   },
   navSubtitle: {
     fontSize: 13,
   },
   navTitle: {
     color: BRAND_COLOR,
-    textAlign: 'left',
+    textAlign: 'center',  // Changed to 'center' to align text centrally
     fontSize: 20,
   },
 };

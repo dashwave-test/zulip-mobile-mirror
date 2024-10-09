@@ -82,6 +82,7 @@ export default function NavRow(props: Props): Node {
         },
         title: {
           ...(titleBoldUppercase ? { textTransform: 'uppercase', fontWeight: '500' } : undefined),
+          flexShrink: 1, // To avoid excessive space being reserved
         },
         subtitle: {
           fontWeight: '300',
@@ -123,7 +124,7 @@ export default function NavRow(props: Props): Node {
         )}
 
         <View style={styles.textWrapper}>
-          <ZulipTextIntl style={styles.title} text={title} />
+          <ZulipTextIntl style={styles.title} text={title} numberOfLines={1} ellipsizeMode="tail" />
           {subtitle !== undefined && <ZulipTextIntl style={styles.subtitle} text={subtitle} />}
         </View>
         <View style={globalStyles.rightItem}>
@@ -137,3 +138,4 @@ export default function NavRow(props: Props): Node {
     </Touchable>
   );
 }
+

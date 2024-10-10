@@ -10,6 +10,7 @@ export type ThemeData = {|
   backgroundColor: string,
   cardColor: string,
   dividerColor: string,
+  statusBarColor: string,
 |};
 
 export const themeData: {| [name: ThemeName]: ThemeData |} = {
@@ -21,6 +22,7 @@ export const themeData: {| [name: ThemeName]: ThemeData |} = {
     // Dividers follow Material Design: opacity 12% black or 12% white.
     // See https://material.io/guidelines/components/dividers.html
     dividerColor: 'hsla(0, 0%, 100%, 0.12)',
+    statusBarColor: 'hsl(212, 28%, 21%)', // added for high contrast
   },
   light: {
     themeName: 'light',
@@ -30,6 +32,7 @@ export const themeData: {| [name: ThemeName]: ThemeData |} = {
     // Dividers follow Material Design: opacity 12% black or 12% white.
     // See https://material.io/guidelines/components/dividers.html
     dividerColor: 'hsla(0, 0%, 0%, 0.12)',
+    statusBarColor: 'white', // consistent with light theme
   },
 };
 

@@ -1,4 +1,4 @@
-# Zulip Mobile
+# Zulip Mobile 1
 
 [![CI](https://github.com/zulip/zulip-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/zulip/zulip-mobile/actions/workflows/ci.yml?query=branch%3Amain)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org/#narrow/stream/mobile)

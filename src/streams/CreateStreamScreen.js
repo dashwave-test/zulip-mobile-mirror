@@ -52,7 +52,11 @@ export default function CreateStreamScreen(props: Props): Node {
         // - error.code: "BAD_REQUEST" (as of server feature level 126;
         //   possibly the server should be more specific)
         if (error instanceof ApiError) {
-          showErrorAlert(error.message);
+          if (error.code === 'BAD_REQUEST' && error.message.includes('default stream')) {
+            showErrorAlert(_('Default streams cannot be made private.'));
+          } else {
+            showErrorAlert(error.message);
+          }
           return false;
         } else {
           throw error;
@@ -73,3 +77,4 @@ export default function CreateStreamScreen(props: Props): Node {
     </Screen>
   );
 }
+

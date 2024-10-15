@@ -53,6 +53,12 @@ export default function CreateStreamScreen(props: Props): Node {
         //   possibly the server should be more specific)
         if (error instanceof ApiError) {
           showErrorAlert(error.message);
+          
+          // Added check for default stream involved in error
+          if (error.code === 'CANNOT_CHANGE_DEFAULT_ACCESS') {
+            showErrorAlert(_('Cannot make a default stream private.'));
+          }
+          
           return false;
         } else {
           throw error;
@@ -73,3 +79,4 @@ export default function CreateStreamScreen(props: Props): Node {
     </Screen>
   );
 }
+

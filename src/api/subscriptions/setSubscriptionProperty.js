@@ -2,7 +2,7 @@
 import type { ApiResponse, Auth } from '../transportTypes';
 import { apiPost } from '../apiFetch';
 
-export type SubscriptionProperty = 'is_muted' | 'pin_to_top' | 'push_notifications';
+export type SubscriptionProperty = 'is_muted' | 'pin_to_top' | 'push_notifications' | 'is_private';
 
 /** See https://chat.zulip.org/api/update-subscription-settings */
 export default async (
@@ -28,3 +28,4 @@ export default async (
       },
     ]),
   });
+

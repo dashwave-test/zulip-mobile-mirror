@@ -6,6 +6,7 @@ import { apiGet } from '../apiFetch';
 type ApiResponseSubscriptionStatus = {|
   ...$Exact<ApiResponseSuccess>,
   is_subscribed: boolean,
+  invite_only: boolean, // Added invite_only to type response
 |};
 
 /**
@@ -20,3 +21,4 @@ export default (
   streamId: number,
 ): Promise<ApiResponseSubscriptionStatus> =>
   apiGet(auth, `users/${userId}/subscriptions/${streamId}`);
+

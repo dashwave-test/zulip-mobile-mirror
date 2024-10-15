@@ -26,7 +26,7 @@ import ZulipButton from '../common/ZulipButton';
 import styles from '../styles';
 import { TranslationContext } from '../boot/TranslationProvider';
 import type { LocalizableText } from '../types';
-import { showConfirmationDialog } from '../utils/info';
+import { showConfirmationDialog, showErrorAlert } from '../utils/info';
 import { getOwnUser } from '../users/userSelectors';
 
 type PropsBase = $ReadOnly<{|
@@ -323,12 +323,15 @@ export default function EditStreamCard(props: Props): Node {
           privacy: initialValues.privacy !== privacy ? privacy : undefined,
         });
       }
-    } finally {
-      if (result) {
-        navigation.goBack();
-      } else {
-        setAwaitingUserInput(true);
-      }
+    } catch (error) {
+      setAwaitingUserInput(true);
+      showErrorAlert('Unable to update stream', error.message);
+      return;
+    }
+    if (result) {
+      navigation.goBack();
+    } else {
+      setAwaitingUserInput(true);
     }
   }, [props, navigation, initialValues, name, description, privacy]);
 
@@ -368,3 +371,4 @@ export default function EditStreamCard(props: Props): Node {
     </View>
   );
 }
+

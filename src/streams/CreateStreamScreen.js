@@ -38,6 +38,10 @@ export default function CreateStreamScreen(props: Props): Node {
       }
 
       try {
+        if (privacy === 'invite-only') {
+          showErrorAlert(_('Cannot make a default stream private.'));
+          return false;
+        }
         await api.createStream(auth, { name, description, ...privacyToStreamProps(privacy) });
         return true;
       } catch (error) {
@@ -73,3 +77,4 @@ export default function CreateStreamScreen(props: Props): Node {
     </Screen>
   );
 }
+

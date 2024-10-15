@@ -230,6 +230,11 @@ function useStreamPrivacyOptions(initialValue: Privacy, isNewStream: boolean) {
             explainCreatePrivateStreamPolicy,
             createPrivateStreamPolicy,
           ),
+          alertIfNotInitialValue:
+            initialValue === 'public' ? {
+              title: 'Confirmation',
+              message: 'You are about to change the stream from public to private. Are you sure you want to proceed?',
+            } : undefined,
         },
         {
           key: 'invite-only',
@@ -241,11 +246,18 @@ function useStreamPrivacyOptions(initialValue: Privacy, isNewStream: boolean) {
             explainCreatePrivateStreamPolicy,
             createPrivateStreamPolicy,
           ),
+          alertIfNotInitialValue:
+            initialValue === 'public' ? {
+              title: 'Confirmation',
+              message: 'You are about to change the stream from public to private. Are you sure you want to proceed?',
+            } : undefined,
         },
       ]
         .filter(Boolean)
         .map(x => {
-          const { disabledIfNotInitialValue = false, ...rest } = x;
+          const { disabledIfNotInitialValue = false, alertIfNotInitialValue, ...rest } = x;
+
+          const shouldAlert = x.key !== initialValue && alertIfNotInitialValue;
 
           return {
             ...rest,
@@ -258,6 +270,7 @@ function useStreamPrivacyOptions(initialValue: Privacy, isNewStream: boolean) {
             // switch back to the first setting without making them submit
             // the accidental setting or restart the app.
             disabled: x.key !== initialValue && disabledIfNotInitialValue,
+            alertIfSelected: shouldAlert ? alertIfNotInitialValue : undefined,
           };
         }),
     [
@@ -314,6 +327,22 @@ export default function EditStreamCard(props: Props): Node {
     setAwaitingUserInput(false);
     let result = false;
     try {
+      if (privacy !== initialValues.privacy) {
+        const selectedOption = privacyOptions.find(option => option.key === privacy);
+        if (selectedOption && selectedOption.alertIfSelected) {
+          const proceed = await showConfirmationDialog({
+            title: selectedOption.alertIfSelected.title,
+            message: selectedOption.alertIfSelected.message,
+            onPressConfirm: () => true,
+            _,
+          });
+          if (!proceed) {
+            setAwaitingUserInput(true);
+            return;
+          }
+        }
+      }
+
       if (props.isNewStream) {
         result = await props.onComplete({ name, description, privacy });
       } else {
@@ -330,7 +359,7 @@ export default function EditStreamCard(props: Props): Node {
         setAwaitingUserInput(true);
       }
     }
-  }, [props, navigation, initialValues, name, description, privacy]);
+  }, [props, navigation, initialValues, name, description, privacy, privacyOptions, _]);
 
   const privacyOptions = useStreamPrivacyOptions(props.initialValues.privacy, isNewStream);
 

@@ -68,6 +68,10 @@ export default function UnreadCards(props: Props): Node {
     );
   };
 
+  const handlePressNotification = (streamId) => {
+    handleExpandCollapse(streamId);
+  };
+
   if (unreadStreamsAndTopics.length === 0 && conversations.length === 0) {
     return <SearchEmptyState text="No unread messages" />;
   }
@@ -95,6 +99,9 @@ export default function UnreadCards(props: Props): Node {
             unreadCount={section.unread}
             extraPaddingEnd={20}
             onPress={stream => {
+              handlePressNotification(stream.stream_id);
+            }}
+            onLongPress={stream => {
               setTimeout(() => dispatch(doNarrow(streamNarrow(stream.stream_id))));
             }}
           />

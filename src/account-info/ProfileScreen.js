@@ -11,7 +11,8 @@ import type { RouteProp } from '../react-navigation';
 import type { MainTabsNavigationProp } from '../main/MainTabsScreen';
 import { createStyleSheet } from '../styles';
 import { useDispatch, useSelector } from '../react-redux';
-import ZulipButton from '../common/ZulipButton';
+import NavRow from '../common/NavRow'; // Updated import
+import TextRow from '../common/TextRow'; // Updated import
 import { logout } from '../account/logoutActions';
 import { tryStopNotifications } from '../notification/notifTokens';
 import AccountDetails from './AccountDetails';
@@ -23,10 +24,9 @@ import { showConfirmationDialog } from '../utils/info';
 import { OfflineNoticePlaceholder } from '../boot/OfflineNoticeProvider';
 import { getUserStatus } from '../user-statuses/userStatusesModel';
 import SwitchRow from '../common/SwitchRow';
+import { emojiTypeFromReactionType } from '../emoji/data';
 import * as api from '../api';
 import { identityOfAccount } from '../account/accountMisc';
-import NavRow from '../common/NavRow';
-import { emojiTypeFromReactionType } from '../emoji/data';
 
 const styles = createStyleSheet({
   buttonRow: {
@@ -42,10 +42,11 @@ const styles = createStyleSheet({
 function ProfileButton(props: {| +ownUserId: UserId |}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
+    <NavRow
       style={styles.button}
-      secondary
-      text="Full profile"
+      type="button"
+      title="Full profile"
+      subtitle=""
       onPress={() => {
         navigation.push('account-details', { userId: props.ownUserId });
       }}
@@ -56,10 +57,11 @@ function ProfileButton(props: {| +ownUserId: UserId |}) {
 function SettingsButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
+    <NavRow
       style={styles.button}
-      secondary
-      text="Settings"
+      type="button"
+      title="Settings"
+      subtitle=""
       onPress={() => {
         navigation.push('settings');
       }}
@@ -70,10 +72,11 @@ function SettingsButton(props: {||}) {
 function SwitchAccountButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
+    <NavRow
       style={styles.button}
-      secondary
-      text="Switch account"
+      type="button"
+      title="Switch account"
+      subtitle=""
       onPress={() => {
         navigation.push('account-pick');
       }}
@@ -87,10 +90,12 @@ function LogoutButton(props: {||}) {
   const account = useSelector(getAccount);
   const identity = identityOfAccount(account);
   return (
-    <ZulipButton
+    <NavRow
       style={styles.button}
-      secondary
-      text="Log out"
+      type="button"
+      title="Log out"
+      subtitle=""
+      destructive
       onPress={() => {
         showConfirmationDialog({
           destructive: true,
@@ -186,3 +191,4 @@ export default function ProfileScreen(props: Props): Node {
     </SafeAreaView>
   );
 }
+

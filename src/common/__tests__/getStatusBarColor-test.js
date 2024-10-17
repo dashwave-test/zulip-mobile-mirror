@@ -14,4 +14,9 @@ describe('getStatusBarColor', () => {
     expect(getStatusBarColor(undefined, themeLight)).toEqual('white');
     expect(getStatusBarColor(undefined, themeDark)).toEqual('hsl(212, 28%, 18%)');
   });
+
+  test('handles landscape mode color change based on theme', () => {
+    expect(getStatusBarColor(undefined, themeLight, 'landscape')).toEqual('hsl(0, 0%, 20%)');
+    expect(getStatusBarColor(undefined, themeDark, 'landscape')).toEqual('hsl(210, 11%, 85%)');
+  });
 });

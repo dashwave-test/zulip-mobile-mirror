@@ -10,6 +10,7 @@ import { themeData } from '../styles/theme';
 import { getThemeToUse } from '../settings/settingsSelectors';
 
 type Props = {|
+// The content of the provider.
   +children: React.Node,
 |};
 
@@ -31,17 +32,11 @@ export default function ZulipSafeAreaProvider(props: Props): React.Node {
   // color used across the app.
   const osScheme = useColorScheme();
 
-  const backgroundColor = useGlobalSelector(state => {
-    if (!getIsHydrated(state)) {
-      // The only screen we'll be showing at this point is the loading
-      // screen.  Match that screen's background.
-      return BRAND_COLOR;
-    }
+  const theme = useGlobalSelector(state => getGlobalSettings(state).theme);
+  const themeToUse = getThemeToUse(theme, osScheme);
 
-    const theme = getGlobalSettings(state).theme;
-    const themeToUse = getThemeToUse(theme, osScheme);
-    return themeData[themeToUse].backgroundColor;
-  });
+  const backgroundColor = themeData[themeToUse].backgroundColor;
+  const statusBarColor = themeData[themeToUse].statusBarColor;
 
-  return <SafeAreaProvider style={{ backgroundColor }}>{props.children}</SafeAreaProvider>;
+  return <SafeAreaProvider style={{ backgroundColor, statusBarColor }}>{props.children}</SafeAreaProvider>;
 }

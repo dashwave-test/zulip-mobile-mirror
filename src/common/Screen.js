@@ -54,7 +54,7 @@ type Props = $ReadOnly<{|
  *                 Required unless `search` is true.
  */
 export default function Screen(props: Props): Node {
-  const { backgroundColor } = useContext(ThemeContext);
+  const { backgroundColor, statusBarColor } = useContext(ThemeContext);
   const {
     autoFocus = false,
     canGoBack = true,

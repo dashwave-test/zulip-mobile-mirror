@@ -17,17 +17,10 @@ type Props = $ReadOnly<{|
 export default function ModalNavBar(props: Props): Node {
   // Layout from https://material.io/components/app-bars-top :
   //  * When we do have a back button, we want 32px between icon and text,
-  //    and 16px before icon.  See handy spec diagrams at end of page.
-  //
-  //  * With no back button, we want 12px before start of text.  (This isn't
-  //    explicit in the guidelines, but see an example without back button
-  //    under "Cross-platform adaptation".  Zoom in and compare to the
-  //    neighboring example where there is one; this example has a bit less
-  //    padding than that one, which should have 16px.)
-  //
-  //  * At end of text, always put 12px, as we never have a button there.
-  //    (This isn't clear either, but use 12px for symmetry with start.)
-  //
+  //    and 16px before icon. 
+  //  * With no back button, we want 12px before start of text.
+  //  * At end of text, always put 12px.
+  //  
   // And the `NavBarBackButton` comes with 12px padding around icon and
   // wants another 4px padding at start.
 
@@ -38,8 +31,8 @@ export default function ModalNavBar(props: Props): Node {
     () => ({
       text: [
         globalStyles.navTitle,
-        { flex: 1 },
-        canGoBack ? { marginStart: 20, marginEnd: 8 } : { marginHorizontal: 8 },
+        { flex: 1, textAlign: canGoBack ? 'left' : 'center' }, // Center alignment when there's no back button for balanced appearance
+        canGoBack ? { marginStart: 20, marginEnd: 8 } : { marginHorizontal: 12 },
       ],
       surface: {
         borderColor: 'hsla(0, 0%, 50%, 0.25)',
@@ -50,6 +43,7 @@ export default function ModalNavBar(props: Props): Node {
         minHeight: NAVBAR_SIZE,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: canGoBack ? 'flex-start' : 'center', // Center content alignment when there's no back button
         paddingHorizontal: 4,
       },
     }),
@@ -66,3 +60,4 @@ export default function ModalNavBar(props: Props): Node {
     </SafeAreaView>
   );
 }
+

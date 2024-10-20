@@ -18,7 +18,7 @@ export const getStatusBarColor = (backgroundColor: string | void, theme: ThemeNa
   backgroundColor ?? (theme === 'dark' ? 'hsl(212, 28%, 18%)' : 'white');
 
 export const getStatusBarStyle = (statusBarColor: string): BarStyle =>
-  foregroundColorFromBackground(statusBarColor) === 'white' /* force newline */
+  foregroundColorFromBackground(statusBarColor) === 'white'
     ? 'light-content'
     : 'dark-content';
 
@@ -54,15 +54,20 @@ export default function ZulipStatusBar(props: Props): Node {
   const backgroundColor = props.backgroundColor;
   const statusBarColor = getStatusBarColor(backgroundColor, themeToUse);
 
+  // Adjust status bar color for better contrast in landscape mode
+  const landscapeStatusBarColor = Color(statusBarColor).darken(0.3).hsl().string();
+
   return (
-    orientation === 'PORTRAIT' && (
-      <StatusBar
-        animated
-        showHideTransition="slide"
-        hidden={hidden && Platform.OS !== 'android'}
-        backgroundColor={Color(statusBarColor).darken(0.1).hsl().string()}
-        barStyle={getStatusBarStyle(statusBarColor)}
-      />
-    )
+    <StatusBar
+      animated
+      showHideTransition="slide"
+      hidden={hidden && Platform.OS !== 'android'}
+      backgroundColor={
+        orientation === 'PORTRAIT'
+          ? Color(statusBarColor).darken(0.1).hsl().string()
+          : landscapeStatusBarColor
+      }
+      barStyle={getStatusBarStyle(statusBarColor)}
+    />
   );
 }

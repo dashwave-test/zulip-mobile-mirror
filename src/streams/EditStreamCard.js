@@ -26,7 +26,7 @@ import ZulipButton from '../common/ZulipButton';
 import styles from '../styles';
 import { TranslationContext } from '../boot/TranslationProvider';
 import type { LocalizableText } from '../types';
-import { showConfirmationDialog } from '../utils/info';
+import { showConfirmationDialog, showErrorAlert } from '../utils/info';
 import { getOwnUser } from '../users/userSelectors';
 
 type PropsBase = $ReadOnly<{|
@@ -317,6 +317,10 @@ export default function EditStreamCard(props: Props): Node {
       if (props.isNewStream) {
         result = await props.onComplete({ name, description, privacy });
       } else {
+        if (initialValues.privacy === 'public' && privacy !== 'public') {
+          showErrorAlert('Cannot change default stream', 'The default stream is public and cannot be made private.');
+          throw new Error('The default stream is public and cannot be made private.');
+        }
         result = await props.onComplete({
           name: initialValues.name !== name ? name : undefined,
           description: initialValues.description !== description ? description : undefined,
@@ -368,3 +372,4 @@ export default function EditStreamCard(props: Props): Node {
     </View>
   );
 }
+

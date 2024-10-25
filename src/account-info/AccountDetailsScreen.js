@@ -10,7 +10,7 @@ import type { UserId } from '../types';
 import globalStyles, { createStyleSheet } from '../styles';
 import { useSelector, useDispatch } from '../react-redux';
 import Screen from '../common/Screen';
-import ZulipButton from '../common/ZulipButton';
+import TextRow from '../common/TextRow';
 import ZulipTextIntl from '../common/ZulipTextIntl';
 import { IconPrivateChat } from '../common/Icons';
 import { pm1to1NarrowFromUser } from '../utils/narrow';
@@ -98,11 +98,10 @@ export default function AccountDetailsScreen(props: Props): Node {
       {!isActive && (
         <ZulipTextIntl style={styles.deactivatedText} text="(This user has been deactivated)" />
       )}
-      <ZulipButton
-        style={styles.pmButton}
-        text={isActive ? 'Send direct message' : 'View direct messages'}
+      <TextRow
+        title={isActive ? 'Send direct message' : 'View direct messages'}
         onPress={handleChatPress}
-        Icon={IconPrivateChat}
+        icon={{ Component: IconPrivateChat }}
       />
     </Screen>
   );

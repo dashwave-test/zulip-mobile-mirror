@@ -118,6 +118,9 @@ export default class NotificationListener {
       // FcmMessage.kt, and will always be a Notification.
       this.listenAndroid('notificationOpened', this.handleNotificationOpen);
       this.listenAndroid('remoteNotificationsRegistered', this.handleDeviceToken);
+
+      // Additional listener for expanding top-level notifications to show topics
+      this.listenAndroid('notificationReceived', this.handleNotificationOpen);
     } else {
       this.listenIOS({
         name: 'response',
@@ -156,3 +159,4 @@ export default class NotificationListener {
     this.unlistenAll();
   }
 }
+

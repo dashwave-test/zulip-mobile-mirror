@@ -1,5 +1,5 @@
 /* @flow strict-local */
-import { DeviceEventEmitter, Platform, NativeModules, NativeEventEmitter } from 'react-native';
+import { DeviceEventEmitter, Platform, NativeModules, NativeEventEmitter, InteractionManager } from 'react-native';
 import type { PushNotificationEventName } from '@react-native-community/push-notification-ios';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import invariant from 'invariant';
@@ -97,7 +97,9 @@ export default class NotificationListener {
 
   /** Private. */
   handleNotificationOpen: Notification => void = notification => {
-    this.dispatch(narrowToNotification(notification));
+    InteractionManager.runAfterInteractions(() => {
+      this.dispatch(narrowToNotification(notification));
+    });
   };
 
   /** Private. */

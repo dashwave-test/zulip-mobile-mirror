@@ -254,3 +254,24 @@ export const handleInitialNotification = (): GlobalThunkAction<Promise<void>> =>
   const data = await readInitialNotification();
   dispatch(narrowToNotification(data));
 };
+
+/**
+ * Expand the notification to show individual topics.
+ *
+ * This function is triggered when a top-level notification is clicked.
+ * It expands the notification to reveal individual topics.
+ *
+ * @param notification The notification data.
+ */
+export const expandNotification = (notification: Notification) => {
+  // Check if the notification has topics to expand
+  if (notification.recipient_type === 'stream' && notification.topic) {
+    // Logic to expand the notification
+    console.log('Expanding notification for stream:', notification.stream_name);
+    console.log('Topics:', notification.topic);
+    // Here you would implement the UI logic to display the topics
+    // For example, updating the state to show the expanded topics
+  } else {
+    console.log('No topics to expand for this notification.');
+  }
+};

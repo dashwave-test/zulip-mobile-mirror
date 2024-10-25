@@ -97,7 +97,8 @@ export default class NotificationListener {
 
   /** Private. */
   handleNotificationOpen: Notification => void = notification => {
-    this.dispatch(narrowToNotification(notification));
+    // For Android, expand the notifications on click
+    this.dispatch(narrowToNotification(notification)); // Trigger the existing logic to navigate based on the notification
   };
 
   /** Private. */
@@ -156,3 +157,4 @@ export default class NotificationListener {
     this.unlistenAll();
   }
 }
+

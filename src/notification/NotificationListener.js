@@ -84,7 +84,15 @@ export default class NotificationListener {
 
   /** Private. */
   listenAndroid(name: string, handler: (...empty) => void | Promise<void>) {
-    const subscription = DeviceEventEmitter.addListener(name, handler);
+    const subscription = DeviceEventEmitter.addListener(name, async (notification) => {
+      // Expand top-level notification to show individual topics
+      if (name === 'notificationOpened' && !notification.hasExpanded) {
+        notification.hasExpanded = true;
+        this.dispatch(narrowToNotification(notification));
+      } else {
+        await handler(notification);
+      }
+    });
     this.unsubs.push(() => subscription.remove());
   }
 

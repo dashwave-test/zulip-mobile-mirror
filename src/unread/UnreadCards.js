@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import type { Node } from 'react';
-import { SectionList } from 'react-native';
+import { SectionList, TouchableOpacity } from 'react-native';
 
 import Immutable from 'immutable';
 import { useDispatch, useSelector } from '../react-redux';
@@ -22,7 +22,7 @@ import { doNarrow } from '../actions';
  * The exact collection of data included here is just an assortment of what
  * the UI in this file happens to need.
  */
-export type UnreadStreamItem = {|
+export type UnreadStreamItem = {|  
   key: string,
   streamId: number,
   streamName: string,
@@ -82,22 +82,24 @@ export default function UnreadCards(props: Props): Node {
       sections={unreadCards}
       renderSectionHeader={({ section }) =>
         section.key === 'private' ? null : (
-          <StreamItem
-            streamId={section.streamId}
-            name={section.streamName}
-            iconSize={16}
-            isCollapsed={collapsedStreamIds.has(section.streamId)}
-            handleExpandCollapse={handleExpandCollapse}
-            isMuted={false}
-            isPrivate={section.isPrivate}
-            isWebPublic={section.isWebPublic}
-            backgroundColor={section.color}
-            unreadCount={section.unread}
-            extraPaddingEnd={20}
-            onPress={stream => {
-              setTimeout(() => dispatch(doNarrow(streamNarrow(stream.stream_id))));
-            }}
-          />
+          <TouchableOpacity onPress={() => handleExpandCollapse(section.streamId)}>
+            <StreamItem
+              streamId={section.streamId}
+              name={section.streamName}
+              iconSize={16}
+              isCollapsed={collapsedStreamIds.has(section.streamId)}
+              handleExpandCollapse={handleExpandCollapse}
+              isMuted={false}
+              isPrivate={section.isPrivate}
+              isWebPublic={section.isWebPublic}
+              backgroundColor={section.color}
+              unreadCount={section.unread}
+              extraPaddingEnd={20}
+              onPress={stream => {
+                setTimeout(() => dispatch(doNarrow(streamNarrow(stream.stream_id))));
+              }}
+            />
+          </TouchableOpacity>
         )
       }
       renderItem={({ item, section }) =>

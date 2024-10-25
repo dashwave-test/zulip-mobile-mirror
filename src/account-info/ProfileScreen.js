@@ -1,3 +1,4 @@
+
 /* @flow strict-local */
 import React, { useContext } from 'react';
 import type { Node } from 'react';
@@ -39,77 +40,6 @@ const styles = createStyleSheet({
   },
 });
 
-function ProfileButton(props: {| +ownUserId: UserId |}) {
-  const navigation = useNavigation();
-  return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Full profile"
-      onPress={() => {
-        navigation.push('account-details', { userId: props.ownUserId });
-      }}
-    />
-  );
-}
-
-function SettingsButton(props: {||}) {
-  const navigation = useNavigation();
-  return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Settings"
-      onPress={() => {
-        navigation.push('settings');
-      }}
-    />
-  );
-}
-
-function SwitchAccountButton(props: {||}) {
-  const navigation = useNavigation();
-  return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Switch account"
-      onPress={() => {
-        navigation.push('account-pick');
-      }}
-    />
-  );
-}
-
-function LogoutButton(props: {||}) {
-  const dispatch = useDispatch();
-  const _ = useContext(TranslationContext);
-  const account = useSelector(getAccount);
-  const identity = identityOfAccount(account);
-  return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Log out"
-      onPress={() => {
-        showConfirmationDialog({
-          destructive: true,
-          title: 'Log out',
-          message: {
-            text: 'This will log out {email} on {realmUrl} from the mobile app on this device.',
-            values: { email: identity.email, realmUrl: identity.realm.toString() },
-          },
-          onPressConfirm: () => {
-            dispatch(tryStopNotifications(account));
-            dispatch(logout());
-          },
-          _,
-        });
-      }}
-    />
-  );
-}
-
 type Props = $ReadOnly<{|
   navigation: MainTabsNavigationProp<'profile'>,
   route: RouteProp<'profile', void>,
@@ -130,6 +60,26 @@ export default function ProfileScreen(props: Props): Node {
   const userStatus = useSelector(state => getUserStatus(state, ownUserId));
 
   const { status_emoji, status_text } = userStatus;
+  const dispatch = useDispatch();
+  const _ = useContext(TranslationContext);
+  const account = useSelector(getAccount);
+  const identity = identityOfAccount(account);
+
+  const handleLogout = () => {
+    showConfirmationDialog({
+      destructive: true,
+      title: 'Log out',
+      message: {
+        text: 'This will log out {email} on {realmUrl} from the mobile app on this device.',
+        values: { email: identity.email, realmUrl: identity.realm.toString() },
+      },
+      onPressConfirm: () => {
+        dispatch(tryStopNotifications(account));
+        dispatch(logout());
+      },
+      _,
+    });
+  };
 
   return (
     <SafeAreaView mode="padding" edges={['top']} style={{ flex: 1 }}>
@@ -172,16 +122,28 @@ export default function ProfileScreen(props: Props): Node {
             }}
           />
         )}
-        <View style={styles.buttonRow}>
-          <ProfileButton ownUserId={ownUser.user_id} />
-        </View>
-        <View style={styles.buttonRow}>
-          <SettingsButton />
-        </View>
-        <View style={styles.buttonRow}>
-          <SwitchAccountButton />
-          <LogoutButton />
-        </View>
+        <NavRow
+          title="Full profile"
+          onPress={() => {
+            navigation.push('account-details', { userId: ownUserId });
+          }}
+        />
+        <NavRow
+          title="Settings"
+          onPress={() => {
+            navigation.push('settings');
+          }}
+        />
+        <NavRow
+          title="Switch account"
+          onPress={() => {
+            navigation.push('account-pick');
+          }}
+        />
+        <NavRow
+          title="Log out"
+          onPress={handleLogout}
+        />
       </ScrollView>
     </SafeAreaView>
   );

@@ -114,9 +114,8 @@ export default class NotificationListener {
   /** Start listening.  Don't call twice without intervening `stop`. */
   async start() {
     if (Platform.OS === 'android') {
-      // On Android, the object passed to the handler is constructed in
-      // FcmMessage.kt, and will always be a Notification.
-      this.listenAndroid('notificationOpened', this.handleNotificationOpen);
+      // On Android, we execute handleNotificationOpen directly to expand notifications on tap
+      this.listenAndroid('notificationOpened', () => this.handleNotificationOpen({})); // {} implies we are expanding
       this.listenAndroid('remoteNotificationsRegistered', this.handleDeviceToken);
     } else {
       this.listenIOS({
@@ -156,3 +155,4 @@ export default class NotificationListener {
     this.unlistenAll();
   }
 }
+

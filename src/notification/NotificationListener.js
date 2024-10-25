@@ -3,7 +3,6 @@ import { DeviceEventEmitter, Platform, NativeModules, NativeEventEmitter } from 
 import type { PushNotificationEventName } from '@react-native-community/push-notification-ios';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import invariant from 'invariant';
-
 import type { JSONableDict } from '../utils/jsonable';
 import type { GlobalDispatch } from '../types';
 import { androidGetToken, handleDeviceToken } from './notifTokens';
@@ -118,6 +117,10 @@ export default class NotificationListener {
       // FcmMessage.kt, and will always be a Notification.
       this.listenAndroid('notificationOpened', this.handleNotificationOpen);
       this.listenAndroid('remoteNotificationsRegistered', this.handleDeviceToken);
+
+      // Add listener for 'notificationReceived' for expanding notifications
+      this.listenAndroid('notificationReceived', this.handleNotificationOpen);
+      
     } else {
       this.listenIOS({
         name: 'response',

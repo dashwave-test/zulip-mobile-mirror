@@ -97,6 +97,11 @@ export default class NotificationListener {
 
   /** Private. */
   handleNotificationOpen: Notification => void = notification => {
+    // On Android, expand the notification when a top-level notification is clicked
+    if (Platform.OS === 'android' && notification.recipient_type === 'stream') {
+      // Logic to expand the notification goes here
+      // This can be implemented by updating the notification data with individual topics
+    }
     this.dispatch(narrowToNotification(notification));
   };
 

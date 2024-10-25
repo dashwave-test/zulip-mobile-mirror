@@ -97,6 +97,12 @@ export default class NotificationListener {
 
   /** Private. */
   handleNotificationOpen: Notification => void = notification => {
+    if (notification.recipient_type === 'stream' && !notification.topic) {
+      // If the notification is for a top-level stream without a specific topic,
+      // we should handle expanding it to show topics.
+      // Handle expansion logic (not implemented yet) or ignore.
+      return;
+    }
     this.dispatch(narrowToNotification(notification));
   };
 
@@ -156,3 +162,4 @@ export default class NotificationListener {
     this.unlistenAll();
   }
 }
+

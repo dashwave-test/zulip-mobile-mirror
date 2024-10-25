@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import type { Node } from 'react';
-import { View, LayoutAnimation } from 'react-native';
+import { View, LayoutAnimation, useWindowDimensions } from 'react-native';
 // $FlowFixMe[untyped-import]
 import PhotoView from 'react-native-photo-view';
 // $FlowFixMe[untyped-import]
@@ -29,6 +29,7 @@ type Props = $ReadOnly<{|
 |}>;
 
 export default function Lightbox(props: Props): Node {
+  const { height, width } = useWindowDimensions();
   const navigation = useNavigation();
 
   const [headerFooterVisible, setHeaderFooterVisible] = useState<boolean>(true);
@@ -60,14 +61,14 @@ export default function Lightbox(props: Props): Node {
           width: '100%',
         },
         header: {
-          backgroundColor: 'black',
+          backgroundColor: height > width ? 'black' : 'transparent',
           opacity: 0.8,
           position: 'absolute',
           width: '100%',
           ...(headerFooterVisible ? { top: 0 } : { bottom: '100%' }),
         },
         footer: {
-          backgroundColor: 'black',
+          backgroundColor: height > width ? 'black' : 'transparent',
           opacity: 0.8,
           position: 'absolute',
           width: '100%',
@@ -79,12 +80,12 @@ export default function Lightbox(props: Props): Node {
           alignItems: 'center',
         },
       }),
-    [headerFooterVisible],
+    [headerFooterVisible, height, width],
   );
 
   return (
     <>
-      <ZulipStatusBar hidden={!headerFooterVisible} backgroundColor="black" />
+      <ZulipStatusBar hidden={!headerFooterVisible} backgroundColor={height > width ? "black" : "transparent"} />
       <View style={styles.container}>
         <PhotoView
           source={
@@ -140,3 +141,4 @@ export default function Lightbox(props: Props): Node {
     </>
   );
 }
+

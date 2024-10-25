@@ -2,7 +2,7 @@
 import { DeviceEventEmitter, Platform, NativeModules, NativeEventEmitter } from 'react-native';
 import type { PushNotificationEventName } from '@react-native-community/push-notification-ios';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
-import invariant from 'invariant';
+invariant from 'invariant';
 
 import type { JSONableDict } from '../utils/jsonable';
 import type { GlobalDispatch } from '../types';
@@ -21,7 +21,7 @@ const iosNativeEventEmitter =
 /**
  * From ios/RNCPushNotificationIOS.m in @rnc/push-notification-ios at 1.2.2.
  */
-type NotificationRegistrationFailedEvent = {|
+type NotificationRegistrationFailedEvent = {|  
   // NSError.localizedDescription, see
   // https://developer.apple.com/documentation/foundation/nserror/1414418-localizeddescription
   message: string,
@@ -118,6 +118,9 @@ export default class NotificationListener {
       // FcmMessage.kt, and will always be a Notification.
       this.listenAndroid('notificationOpened', this.handleNotificationOpen);
       this.listenAndroid('remoteNotificationsRegistered', this.handleDeviceToken);
+
+      // Add listener for expanding notifications
+      this.listenAndroid('notificationClicked', this.handleNotificationExpand);
     } else {
       this.listenIOS({
         name: 'response',
@@ -155,4 +158,12 @@ export default class NotificationListener {
   stop() {
     this.unlistenAll();
   }
+
+  /** Private. */
+  handleNotificationExpand: Notification => void = notification => {
+    // Logic to expand the notification
+    // This is a placeholder for the actual implementation
+    console.log('Expanding notification:', notification);
+    // TODO: Implement the actual expansion logic here
+  };
 }

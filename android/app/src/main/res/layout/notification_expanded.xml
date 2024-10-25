@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Title of the notification -->
+    <TextView
+        android:id="@+id/notification_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notification Title"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- Summary of the notification -->
+    <TextView
+        android:id="@+id/notification_summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notification Summary"
+        android:textSize="14sp" />
+
+    <!-- Expandable section for individual topics -->
+    <LinearLayout
+        android:id="@+id/notification_expandable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Example topic item -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Topic 1"
+            android:textSize="14sp" />
+
+        <!-- Add more topic items as needed -->
+    </LinearLayout>
+
+</LinearLayout>

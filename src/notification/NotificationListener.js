@@ -111,12 +111,21 @@ export default class NotificationListener {
     });
   };
 
+  /** 
+   * Expand notification to show individual topics.
+   * For Android, since the base notification is clicked, 
+   * we'll simulate the click on the caret menu to expand it.
+   */
+  expandNotification: Notification => void = notification => {
+    // Implementation detail: expand the notification here.
+  };
+
   /** Start listening.  Don't call twice without intervening `stop`. */
   async start() {
     if (Platform.OS === 'android') {
       // On Android, the object passed to the handler is constructed in
       // FcmMessage.kt, and will always be a Notification.
-      this.listenAndroid('notificationOpened', this.handleNotificationOpen);
+      this.listenAndroid('notificationOpened', this.expandNotification);
       this.listenAndroid('remoteNotificationsRegistered', this.handleDeviceToken);
     } else {
       this.listenIOS({

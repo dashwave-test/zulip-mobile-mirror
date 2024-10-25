@@ -12,6 +12,8 @@ import * as logging from '../utils/logging';
 import { fromAPNs } from './extract';
 import { narrowToNotification } from './notifOpen';
 
+const { Notifications } = NativeModules;
+
 // TODO: Could go in a separate file, with some thin wrapper perhaps.
 const iosNativeEventEmitter =
   Platform.OS === 'ios'
@@ -118,6 +120,7 @@ export default class NotificationListener {
       // FcmMessage.kt, and will always be a Notification.
       this.listenAndroid('notificationOpened', this.handleNotificationOpen);
       this.listenAndroid('remoteNotificationsRegistered', this.handleDeviceToken);
+      this.listenAndroid('notificationReceived', this.handleNotificationReceived);
     } else {
       this.listenIOS({
         name: 'response',
@@ -151,8 +154,18 @@ export default class NotificationListener {
     }
   }
 
+  /** Private. */
+  handleNotificationReceived = (notification: Notification) => {
+    if (notification && notification.data) {
+      if (notification.data.actionType === 'expand') {
+        Notifications.expand(notification);
+      }
+    }
+  };
+
   /** Stop listening. */
   stop() {
     this.unlistenAll();
   }
 }
+

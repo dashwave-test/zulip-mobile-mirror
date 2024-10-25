@@ -98,6 +98,11 @@ export default class NotificationListener {
   /** Private. */
   handleNotificationOpen: Notification => void = notification => {
     this.dispatch(narrowToNotification(notification));
+
+    if (notification.recipient_type === 'stream' && Platform.OS === 'android') {
+      // Assuming a method to handle the expansion of notification
+      this.expandAndroidNotification(notification.stream_id);
+    }
   };
 
   /** Private. */
@@ -110,6 +115,13 @@ export default class NotificationListener {
       raw_error: err,
     });
   };
+  
+  /** Private. */
+  expandAndroidNotification(streamId: number) {
+    // Implement the logic to expand notification
+    const { Notifications } = NativeModules;
+    Notifications.expandNotification(streamId);
+  }
 
   /** Start listening.  Don't call twice without intervening `stop`. */
   async start() {

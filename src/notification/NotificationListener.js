@@ -97,7 +97,18 @@ export default class NotificationListener {
 
   /** Private. */
   handleNotificationOpen: Notification => void = notification => {
-    this.dispatch(narrowToNotification(notification));
+    // Dispatch the action to narrow to the notification or handle topic listing
+    if (notification.recipient_type === 'stream') {
+      // If the notification is of type 'stream', handle topic listing expansion
+      const expandAction = {
+        type: 'EXPAND_NOTIFICATION',
+        stream_id: notification.stream_id,
+      };
+
+      this.dispatch(expandAction);
+    } else {
+      this.dispatch(narrowToNotification(notification));
+    }
   };
 
   /** Private. */
@@ -156,3 +167,4 @@ export default class NotificationListener {
     this.unlistenAll();
   }
 }
+

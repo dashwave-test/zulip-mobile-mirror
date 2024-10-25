@@ -18,7 +18,7 @@ export const getStatusBarColor = (backgroundColor: string | void, theme: ThemeNa
   backgroundColor ?? (theme === 'dark' ? 'hsl(212, 28%, 18%)' : 'white');
 
 export const getStatusBarStyle = (statusBarColor: string): BarStyle =>
-  foregroundColorFromBackground(statusBarColor) === 'white' /* force newline */
+  foregroundColorFromBackground(statusBarColor) === 'white'
     ? 'light-content'
     : 'dark-content';
 
@@ -35,6 +35,9 @@ type Props = $ReadOnly<{|
  * will make the status bar visible, and omitting `backgroundColor`
  * will give a theme-appropriate default.
  *
+ * The status bar's appearance adapts dynamically to portrait and
+ * landscape orientations, ensuring consistency.
+ *
  * `StatusBar` renders `null` every time. Therefore, don't look to
  * `ZulipStatusBar`'s position in the hierarchy of `View`s to affect
  * the layout in any way.
@@ -50,19 +53,17 @@ export default function ZulipStatusBar(props: Props): Node {
   const osScheme = useColorScheme();
   const themeToUse = getThemeToUse(theme, osScheme);
 
-  const orientation = useGlobalSelector(state => getGlobalSession(state).orientation);
   const backgroundColor = props.backgroundColor;
   const statusBarColor = getStatusBarColor(backgroundColor, themeToUse);
 
   return (
-    orientation === 'PORTRAIT' && (
-      <StatusBar
-        animated
-        showHideTransition="slide"
-        hidden={hidden && Platform.OS !== 'android'}
-        backgroundColor={Color(statusBarColor).darken(0.1).hsl().string()}
-        barStyle={getStatusBarStyle(statusBarColor)}
-      />
-    )
+    <StatusBar
+      animated
+      showHideTransition="slide"
+      hidden={hidden && Platform.OS !== 'android'}
+      backgroundColor={Color(statusBarColor).darken(0.1).hsl().string()}
+      barStyle={getStatusBarStyle(statusBarColor)}
+    />
   );
 }
+

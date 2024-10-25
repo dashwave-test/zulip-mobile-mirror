@@ -23,10 +23,12 @@ import { showConfirmationDialog } from '../utils/info';
 import { OfflineNoticePlaceholder } from '../boot/OfflineNoticeProvider';
 import { getUserStatus } from '../user-statuses/userStatusesModel';
 import SwitchRow from '../common/SwitchRow';
+import NavRow from '../common/NavRow';
+import TextRow from '../common/TextRow';
 import * as api from '../api';
 import { identityOfAccount } from '../account/accountMisc';
-import NavRow from '../common/NavRow';
 import { emojiTypeFromReactionType } from '../emoji/data';
+import { IconPrivate, IconSettings } from '../common/Icons';
 
 const styles = createStyleSheet({
   buttonRow: {
@@ -42,10 +44,9 @@ const styles = createStyleSheet({
 function ProfileButton(props: {| +ownUserId: UserId |}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Full profile"
+    <NavRow
+      leftElement={{ type: 'icon', Component: IconPrivate }}
+      title="Full profile"
       onPress={() => {
         navigation.push('account-details', { userId: props.ownUserId });
       }}
@@ -56,10 +57,9 @@ function ProfileButton(props: {| +ownUserId: UserId |}) {
 function SettingsButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Settings"
+    <NavRow
+      leftElement={{ type: 'icon', Component: IconSettings }}
+      title="Settings"
       onPress={() => {
         navigation.push('settings');
       }}
@@ -70,10 +70,8 @@ function SettingsButton(props: {||}) {
 function SwitchAccountButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Switch account"
+    <TextRow
+      title="Switch account"
       onPress={() => {
         navigation.push('account-pick');
       }}
@@ -87,10 +85,8 @@ function LogoutButton(props: {||}) {
   const account = useSelector(getAccount);
   const identity = identityOfAccount(account);
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Log out"
+    <TextRow
+      title="Log out"
       onPress={() => {
         showConfirmationDialog({
           destructive: true,
@@ -186,3 +182,4 @@ export default function ProfileScreen(props: Props): Node {
     </SafeAreaView>
   );
 }
+

@@ -6,8 +6,8 @@ import { apiPost } from '../apiFetch';
 /** See https://zulip.com/api/send-message */
 export default async (
   auth: Auth,
-  params: {|
-    type: 'private' | 'stream',
+  params: {|  
+    type: 'private' | 'stream' | 'direct',
     to: string,
     // TODO(server-2.0): Say "topic", not "subject"
     subject?: string,

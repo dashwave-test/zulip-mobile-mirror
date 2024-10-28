@@ -11,7 +11,6 @@ import type { RouteProp } from '../react-navigation';
 import type { MainTabsNavigationProp } from '../main/MainTabsScreen';
 import { createStyleSheet } from '../styles';
 import { useDispatch, useSelector } from '../react-redux';
-import ZulipButton from '../common/ZulipButton';
 import { logout } from '../account/logoutActions';
 import { tryStopNotifications } from '../notification/notifTokens';
 import AccountDetails from './AccountDetails';
@@ -26,6 +25,7 @@ import SwitchRow from '../common/SwitchRow';
 import * as api from '../api';
 import { identityOfAccount } from '../account/accountMisc';
 import NavRow from '../common/NavRow';
+import TextRow from '../common/TextRow';
 import { emojiTypeFromReactionType } from '../emoji/data';
 
 const styles = createStyleSheet({
@@ -39,13 +39,12 @@ const styles = createStyleSheet({
   },
 });
 
+// Component for navigating to the full profile screen
 function ProfileButton(props: {| +ownUserId: UserId |}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Full profile"
+    <NavRow
+      title="Full profile"
       onPress={() => {
         navigation.push('account-details', { userId: props.ownUserId });
       }}
@@ -53,13 +52,12 @@ function ProfileButton(props: {| +ownUserId: UserId |}) {
   );
 }
 
+// Component for navigating to the settings screen
 function SettingsButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Settings"
+    <NavRow
+      title="Settings"
       onPress={() => {
         navigation.push('settings');
       }}
@@ -67,13 +65,12 @@ function SettingsButton(props: {||}) {
   );
 }
 
+// Component for navigating to the switch account screen
 function SwitchAccountButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Switch account"
+    <NavRow
+      title="Switch account"
       onPress={() => {
         navigation.push('account-pick');
       }}
@@ -81,16 +78,15 @@ function SwitchAccountButton(props: {||}) {
   );
 }
 
+// Component for logging out
 function LogoutButton(props: {||}) {
   const dispatch = useDispatch();
   const _ = useContext(TranslationContext);
   const account = useSelector(getAccount);
   const identity = identityOfAccount(account);
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Log out"
+    <NavRow
+      title="Log out"
       onPress={() => {
         showConfirmationDialog({
           destructive: true,

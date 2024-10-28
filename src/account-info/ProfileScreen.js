@@ -11,7 +11,6 @@ import type { RouteProp } from '../react-navigation';
 import type { MainTabsNavigationProp } from '../main/MainTabsScreen';
 import { createStyleSheet } from '../styles';
 import { useDispatch, useSelector } from '../react-redux';
-import ZulipButton from '../common/ZulipButton';
 import { logout } from '../account/logoutActions';
 import { tryStopNotifications } from '../notification/notifTokens';
 import AccountDetails from './AccountDetails';
@@ -27,6 +26,7 @@ import * as api from '../api';
 import { identityOfAccount } from '../account/accountMisc';
 import NavRow from '../common/NavRow';
 import { emojiTypeFromReactionType } from '../emoji/data';
+import TextRow from '../common/TextRow';
 
 const styles = createStyleSheet({
   buttonRow: {
@@ -42,10 +42,8 @@ const styles = createStyleSheet({
 function ProfileButton(props: {| +ownUserId: UserId |}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Full profile"
+    <NavRow
+      title="Full profile"
       onPress={() => {
         navigation.push('account-details', { userId: props.ownUserId });
       }}
@@ -56,10 +54,8 @@ function ProfileButton(props: {| +ownUserId: UserId |}) {
 function SettingsButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Settings"
+    <NavRow
+      title="Settings"
       onPress={() => {
         navigation.push('settings');
       }}
@@ -70,10 +66,8 @@ function SettingsButton(props: {||}) {
 function SwitchAccountButton(props: {||}) {
   const navigation = useNavigation();
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Switch account"
+    <NavRow
+      title="Switch account"
       onPress={() => {
         navigation.push('account-pick');
       }}
@@ -87,10 +81,8 @@ function LogoutButton(props: {||}) {
   const account = useSelector(getAccount);
   const identity = identityOfAccount(account);
   return (
-    <ZulipButton
-      style={styles.button}
-      secondary
-      text="Log out"
+    <NavRow
+      title="Log out"
       onPress={() => {
         showConfirmationDialog({
           destructive: true,

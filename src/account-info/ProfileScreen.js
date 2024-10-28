@@ -39,6 +39,7 @@ const styles = createStyleSheet({
   },
 });
 
+// Component for navigating to the full profile screen
 function ProfileButton(props: {| +ownUserId: UserId |}) {
   const navigation = useNavigation();
   return (
@@ -51,6 +52,7 @@ function ProfileButton(props: {| +ownUserId: UserId |}) {
   );
 }
 
+// Component for navigating to the settings screen
 function SettingsButton(props: {||}) {
   const navigation = useNavigation();
   return (
@@ -63,6 +65,7 @@ function SettingsButton(props: {||}) {
   );
 }
 
+// Component for navigating to the switch account screen
 function SwitchAccountButton(props: {||}) {
   const navigation = useNavigation();
   return (
@@ -75,6 +78,7 @@ function SwitchAccountButton(props: {||}) {
   );
 }
 
+// Component for logging out
 function LogoutButton(props: {||}) {
   const dispatch = useDispatch();
   const _ = useContext(TranslationContext);

@@ -31,7 +31,7 @@ import {
 import { getFirstUnreadIdInNarrow } from '../message/messageSelectors';
 import { getDraftForNarrow } from '../drafts/draftsSelectors';
 import { addToOutbox } from '../actions';
-import { getAuth, getCaughtUpForNarrow } from '../selectors';
+import { getAuth, getCaughtUpForNarrow, getZulipFeatureLevel } from '../selectors';
 import { showErrorAlert } from '../utils/info';
 import { TranslationContext } from '../boot/TranslationProvider';
 import * as api from '../api';
@@ -155,6 +155,7 @@ export default function ChatScreen(props: Props): Node {
   const composeBoxRef = React.useRef<ComposeBoxImperativeHandle | null>(null);
 
   const auth = useSelector(getAuth);
+  const zulipFeatureLevel = useSelector(getZulipFeatureLevel);
   const caughtUp = useSelector(state => getCaughtUpForNarrow(state, narrow));
   const dispatch = useDispatch();
   const fetching = useSelector(state => getFetchingForNarrow(state, narrow));
@@ -229,10 +230,10 @@ export default function ChatScreen(props: Props): Node {
           return;
         }
 
-        dispatch(addToOutbox(destinationNarrow, message));
+        dispatch(addToOutbox(destinationNarrow, message, zulipFeatureLevel));
       }
     },
-    [_, auth, fetching.newer, dispatch, editMessage, setEditMessage],
+    [_, auth, fetching.newer, dispatch, editMessage, setEditMessage, zulipFeatureLevel],
   );
 
   return (

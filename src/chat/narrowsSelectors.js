@@ -106,7 +106,7 @@ export const getShownMessagesForNarrow: Selector<$ReadOnlyArray<Message | Outbox
       caseNarrow(narrow, {
         home: _ =>
           messagesForNarrow.filter(message => {
-            if (message.type === 'private') {
+            if (message.type === 'private' || message.type === 'direct') {
               return true;
             }
             if (flags.mentioned[message.id]) {
@@ -125,7 +125,7 @@ export const getShownMessagesForNarrow: Selector<$ReadOnlyArray<Message | Outbox
 
         stream: _ =>
           messagesForNarrow.filter(message => {
-            if (message.type === 'private') {
+            if (message.type === 'private' || message.type === 'direct') {
               return true;
             }
             if (flags.mentioned[message.id]) {

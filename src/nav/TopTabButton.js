@@ -13,6 +13,7 @@ const componentStyles = createStyleSheet({
     height: NAVBAR_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 8, // Added padding to reduce empty space
   },
   buttonIcon: {
     textAlign: 'center',

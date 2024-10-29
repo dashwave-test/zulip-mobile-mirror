@@ -2,7 +2,7 @@
 
 import React, { PureComponent } from 'react';
 import type { ComponentType } from 'react';
-import { Linking, Platform } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import type { AppleAuthenticationCredential } from 'expo-apple-authentication';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
@@ -22,6 +22,7 @@ import {
   IconGitHub,
   IconWindows,
   IconTerminal,
+  IconInfo,
 } from '../common/Icons';
 import type { SpecificIconType } from '../common/Icons';
 import { connectGlobal } from '../react-redux';
@@ -142,8 +143,7 @@ type OuterProps = $ReadOnly<{|
   navigation: AppNavigationProp<'auth'>,
   route: RouteProp<
     'auth',
-    {|
-      // Keep constant through the life of an 'auth' route: don't
+    {|      // Keep constant through the life of an 'auth' route: don't
       // `navigation.navigate` or `navigation.setParams` or do anything else
       // that can change this. We use it to identify the server to the user,
       // and also to identify which server to send auth credentials to. So
@@ -303,6 +303,11 @@ class AuthScreenInner extends PureComponent<Props> {
     }
   };
 
+  handleInfoPress = () => {
+    const documentationUrl = 'https://example.com/documentation'; // Replace with actual documentation URL
+    Linking.openURL(documentationUrl);
+  };
+
   render() {
     const { serverSettings } = this.props.route.params;
 
@@ -337,6 +342,15 @@ class AuthScreenInner extends PureComponent<Props> {
               />
             ),
           )}
+          <View style={{ marginTop: 20 }}>
+            <ZulipButton
+              style={styles.halfMarginTop}
+              secondary
+              text="Info"
+              Icon={IconInfo}
+              onPress={this.handleInfoPress}
+            />
+          </View>
         </Centerer>
       </Screen>
     );

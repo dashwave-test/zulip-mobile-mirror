@@ -21,6 +21,8 @@ import { useGlobalSelector } from '../react-redux';
 import { BRAND_COLOR } from '../styles/constants';
 import ZulipText from '../common/ZulipText';
 import WebLink from '../common/WebLink';
+import NavButton from '../nav/NavButton'; // Import NavButton
+import { openLinkWithUserPreference } from '../utils/openLink'; // Import utility
 
 type Props = $ReadOnly<{|
   navigation: AppNavigationProp<'realm-input'>,
@@ -216,6 +218,12 @@ export default function RealmInputScreen(props: Props): Node {
           color: BRAND_COLOR, // chosen to mimic WebLink
         },
         button: { marginTop: 8 },
+        navButton: {
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          zIndex: 100,
+        },
       }),
     [themeContext],
   );
@@ -256,6 +264,13 @@ export default function RealmInputScreen(props: Props): Node {
     }
   }, [suggestion, handlePressSuggestion, styles]);
 
+  const openDocumentationPage = () => {
+    openLinkWithUserPreference(
+      new URL('https://zulip.com/help/logging-in#find-the-zulip-log-in-url'),
+      globalSettings,
+    );
+  };
+
   return (
     <Screen
       title="Welcome"
@@ -265,6 +280,12 @@ export default function RealmInputScreen(props: Props): Node {
       keyboardShouldPersistTaps="always"
       shouldShowLoadingBanner={false}
     >
+      <NavButton
+        style={styles.navButton}
+        name="info-outline" // Assuming the name of the icon you want to use
+        onPress={openDocumentationPage}
+        accessibilityLabel="Open Documentation"
+      />
       <ZulipTextIntl
         text={{
           text: 'Enter your Zulip server URL: <z-link>(What’s this?)</z-link>',

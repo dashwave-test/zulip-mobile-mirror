@@ -23,6 +23,7 @@ import {
   IconWindows,
   IconTerminal,
   IconInfo,
+  IconHelpCircle,
 } from '../common/Icons';
 import type { SpecificIconType } from '../common/Icons';
 import { connectGlobal } from '../react-redux';
@@ -347,7 +348,7 @@ class AuthScreenInner extends PureComponent<Props> {
               style={styles.halfMarginTop}
               secondary
               text="Info"
-              Icon={IconInfo}
+              Icon={IconHelpCircle}
               onPress={this.handleInfoPress}
             />
           </View>

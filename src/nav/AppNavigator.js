@@ -50,6 +50,8 @@ import SelectableOptionsScreen from '../common/SelectableOptionsScreen';
 import StreamListScreen from '../subscriptions/StreamListScreen';
 import ReadReceiptsScreen from '../message/ReadReceiptsScreen';
 import { useHaveServerDataGate } from '../withHaveServerDataGate';
+import { Linking } from 'react-native';
+import { Button } from 'react-native';
 
 export type AppNavigatorParamList = {|
   +'account-pick': RouteParamsOf<typeof AccountPickScreen>,
@@ -206,6 +208,15 @@ export default function AppNavigator(props: Props): Node {
       />
       <Stack.Screen name="sharing" component={SharingScreen} />
       <Stack.Screen name="selectable-options" component={SelectableOptionsScreen} />
+      <Stack.Screen
+        name="login"
+        component={() => (
+          <Button
+            title="Go to Zulip Website"
+            onPress={() => Linking.openURL('https://zulip.com')}
+          />
+        )}
+      />
     </Stack.Navigator>
   );
 }

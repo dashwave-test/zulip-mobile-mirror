@@ -142,7 +142,7 @@ type OuterProps = $ReadOnly<{|
   navigation: AppNavigationProp<'auth'>,
   route: RouteProp<
     'auth',
-    {|
+    {|  
       // Keep constant through the life of an 'auth' route: don't
       // `navigation.navigate` or `navigation.setParams` or do anything else
       // that can change this. We use it to identify the server to the user,
@@ -337,6 +337,12 @@ class AuthScreenInner extends PureComponent<Props> {
               />
             ),
           )}
+          <ZulipButton
+            style={styles.halfMarginTop}
+            secondary
+            text="Visit Zulip Website"
+            onPress={() => Linking.openURL('https://zulip.com')}
+          />
         </Centerer>
       </Screen>
     );

@@ -8,6 +8,24 @@ import { pmKeyRecipientsFromIds, recipientsOfPrivateMessage } from './recipient'
 import { isUrlOnRealm } from './url';
 
 /**
+ * Normalize the protocol of a given URL to ensure it is safe.
+ *
+ * This function checks if the URL's protocol is allowed and normalizes it.
+ * If the protocol is not allowed, it throws an error.
+ *
+ * @param {URL} url - The URL to be normalized.
+ * @returns {URL} - The normalized URL.
+ * @throws {Error} - If the URL's protocol is not allowed.
+ */
+const normalizeUrlProtocol = (url: URL): URL => {
+  const allowedProtocols = ['http:', 'https:'];
+  if (!allowedProtocols.includes(url.protocol)) {
+    throw new Error(`Forbidden protocol: ${url.protocol}`);
+  }
+  return url;
+};
+
+/**
  * For narrow URL https://zulip.example/#narrow/foo/bar, split the part of
  *   the hash after #narrow/ to give ['foo', 'bar'].
  *
@@ -140,8 +158,11 @@ export const getNarrowFromNarrowLink = (
   streamsByName: Map<string, Stream>,
   ownUserId: UserId,
 ): Narrow | null => {
+  // Normalize the URL protocol to ensure safety
+  const normalizedUrl = normalizeUrlProtocol(url);
+
   // isNarrowLink(…) is true, by jsdoc, so this call is OK.
-  const hashSegments = getHashSegmentsFromNarrowLink(url, realm);
+  const hashSegments = getHashSegmentsFromNarrowLink(normalizedUrl, realm);
 
   if (
     // 'dm' is new in server-7.0; means the same as 'pm-with'
@@ -209,8 +230,11 @@ export const getNarrowFromNarrowLink = (
  *   message_id if the URL has /near/{message_id}, otherwise give null.
  */
 export const getNearOperandFromLink = (url: URL, realm: URL): number | null => {
+  // Normalize the URL protocol to ensure safety
+  const normalizedUrl = normalizeUrlProtocol(url);
+
   // isNarrowLink(…) is true, by jsdoc, so this call is OK.
-  const hashSegments = getHashSegmentsFromNarrowLink(url, realm);
+  const hashSegments = getHashSegmentsFromNarrowLink(normalizedUrl, realm);
 
   // This and nearOperandIndex can simplify when we rename/repurpose
   //   getHashSegmentsFromNarrowLink so it gives an array of

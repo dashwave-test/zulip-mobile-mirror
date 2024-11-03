@@ -28,6 +28,24 @@ export const encodeParamsForUrl = (params: UrlParams): string =>
     .join('&');
 
 /**
+ * Normalize the protocol of a URL to lowercase.
+ *
+ * This function ensures that the protocol part of the URL is always in
+ * lowercase, which is important for consistent URL comparisons and security
+ * checks.
+ */
+export const normalizeUrlProtocol = (url: string): string => {
+  try {
+    const parsedUrl = new URL(url);
+    parsedUrl.protocol = parsedUrl.protocol.toLowerCase();
+    return parsedUrl.toString();
+  } catch (e) {
+    // If the URL is invalid, return it as is.
+    return url;
+  }
+};
+
+/**
  * Test for an absolute URL, assuming a valid URL.
  *
  * Specifically, we assume the input is a "valid URL string" as defined by

@@ -2,7 +2,7 @@
 
 import React, { PureComponent } from 'react';
 import type { ComponentType } from 'react';
-import { Linking, Platform } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import type { AppleAuthenticationCredential } from 'expo-apple-authentication';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
@@ -35,6 +35,7 @@ import * as webAuth from './webAuth';
 import { loginSuccess } from '../actions';
 import IosCompliantAppleAuthButton from './IosCompliantAppleAuthButton';
 import { openLinkEmbedded } from '../utils/openLink';
+import WebLink from '../common/WebLink';
 
 /**
  * Describes a method for authenticating to the server.
@@ -43,7 +44,7 @@ import { openLinkEmbedded } from '../utils/openLink';
  * described in the /server_settings response; see api.getServerSettings
  * and https://zulip.com/api/get-server-settings .
  */
-type AuthenticationMethodDetails = {|
+type AuthenticationMethodDetails = {|  
   /** An identifier-style name used in the /server_settings API. */
   name: string,
 
@@ -142,7 +143,7 @@ type OuterProps = $ReadOnly<{|
   navigation: AppNavigationProp<'auth'>,
   route: RouteProp<
     'auth',
-    {|
+    {|      
       // Keep constant through the life of an 'auth' route: don't
       // `navigation.navigate` or `navigation.setParams` or do anything else
       // that can change this. We use it to identify the server to the user,
@@ -337,6 +338,15 @@ class AuthScreenInner extends PureComponent<Props> {
               />
             ),
           )}
+          <View style={styles.halfMarginTop}>
+            <WebLink url="https://zulip.com/help/logging-in">
+              <ZulipButton
+                text="Info"
+                secondary
+                onPress={() => Linking.openURL('https://zulip.com/help/logging-in')}
+              />
+            </WebLink>
+          </View>
         </Centerer>
       </Screen>
     );

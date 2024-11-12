@@ -21,6 +21,7 @@ const styleSheetForVariant = (variant: Variant) =>
       height: 36,
       paddingHorizontal: 8,
       minWidth: 64,
+      flex: 1, // Make the button full width
     },
 
     // Chosen because of the value for this distance at

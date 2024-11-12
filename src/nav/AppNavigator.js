@@ -50,6 +50,8 @@ import SelectableOptionsScreen from '../common/SelectableOptionsScreen';
 import StreamListScreen from '../subscriptions/StreamListScreen';
 import ReadReceiptsScreen from '../message/ReadReceiptsScreen';
 import { useHaveServerDataGate } from '../withHaveServerDataGate';
+import DocumentationScreen from '../documentation/DocumentationScreen';
+import NavButton from './NavButton';
 
 export type AppNavigatorParamList = {|
   +'account-pick': RouteParamsOf<typeof AccountPickScreen>,
@@ -81,6 +83,7 @@ export type AppNavigatorParamList = {|
   +settings: RouteParamsOf<typeof SettingsScreen>,
   +'selectable-options': RouteParamsOf<typeof SelectableOptionsScreen>,
   +'read-receipts': RouteParamsOf<typeof ReadReceiptsScreen>,
+  +documentation: RouteParamsOf<typeof DocumentationScreen>,
 |};
 
 /**
@@ -140,12 +143,19 @@ export default function AppNavigator(props: Props): Node {
     <Stack.Navigator
       initialRouteName={initialRouteName}
       headerMode="none"
-      screenOptions={{
+      screenOptions={({ navigation }) => ({
         ...Platform.select({
           android: TransitionPresets.FadeFromBottomAndroid,
           ios: TransitionPresets.DefaultTransition,
         }),
-      }}
+        headerRight: () => (
+          <NavButton
+            name="info"
+            onPress={() => navigation.navigate('documentation')}
+            accessibilityLabel="Documentation"
+          />
+        ),
+      })}
     >
       {/* These screens expect server data in order to function normally. */}
       <Stack.Screen
@@ -206,6 +216,7 @@ export default function AppNavigator(props: Props): Node {
       />
       <Stack.Screen name="sharing" component={SharingScreen} />
       <Stack.Screen name="selectable-options" component={SelectableOptionsScreen} />
+      <Stack.Screen name="documentation" component={DocumentationScreen} />
     </Stack.Navigator>
   );
 }

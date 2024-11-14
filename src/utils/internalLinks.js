@@ -45,6 +45,15 @@ export const isNarrowLink = (url: URL, realm: URL): boolean =>
   && url.search === ''
   && /^#narrow\//i.test(url.hash);
 
+/** Normalize the protocol of a URL to prevent forbidden protocols. */
+const normalizeUrlProtocol = (url: URL): URL => {
+  const allowedProtocols = ['http:', 'https:'];
+  if (!allowedProtocols.includes(url.protocol)) {
+    throw new Error(`Forbidden protocol: ${url.protocol}`);
+  }
+  return url;
+};
+
 /** Decode a dot-encoded string. */
 // The Zulip webapp uses this encoding in narrow-links:
 // https://github.com/zulip/zulip/blob/1577662a6/static/js/hash_util.js#L18-L25
@@ -140,6 +149,9 @@ export const getNarrowFromNarrowLink = (
   streamsByName: Map<string, Stream>,
   ownUserId: UserId,
 ): Narrow | null => {
+  // Normalize the URL protocol to prevent forbidden protocols.
+  url = normalizeUrlProtocol(url);
+
   // isNarrowLink(…) is true, by jsdoc, so this call is OK.
   const hashSegments = getHashSegmentsFromNarrowLink(url, realm);
 

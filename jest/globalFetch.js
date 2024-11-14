@@ -11,7 +11,9 @@ fetch.mockResponseFailure = error => {
 };
 
 fetch.mockErrorStatusCode = status => {
-  fetch.mockImplementation({ status });
+  fetch.mockImplementation(() =>
+    Promise.resolve({ status, ok: status >= 200 && status < 300 })
+  );
 };
 
 fetch.reset = () => {

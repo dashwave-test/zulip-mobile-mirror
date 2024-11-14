@@ -28,6 +28,18 @@ export const encodeParamsForUrl = (params: UrlParams): string =>
     .join('&');
 
 /**
+ * Normalize the protocol of a URL to lowercase.
+ */
+const normalizeProtocol = (url: string): string => {
+  const match = url.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:)/);
+  if (match) {
+    const protocol = match[1].toLowerCase();
+    return protocol + url.slice(protocol.length);
+  }
+  return url;
+};
+
+/**
  * Test for an absolute URL, assuming a valid URL.
  *
  * Specifically, we assume the input is a "valid URL string" as defined by
@@ -42,7 +54,7 @@ export const isUrlAbsolute = (url: string): boolean =>
   // Every "absolute-URL string" must do so.
   // Every "relative-URL string" must not do so: either it starts with a
   //   "path-relative-scheme-less-URL string", or it starts with `/`.
-  url.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:/) !== null;
+  normalizeProtocol(url).match(/^[a-zA-Z][a-zA-Z0-9+.-]*:/) !== null;
 
 /**
  * Test for a relative URL string, assuming a valid URL.

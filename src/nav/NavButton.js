@@ -6,6 +6,8 @@ import { BRAND_COLOR, createStyleSheet } from '../styles';
 import { Icon } from '../common/Icons';
 import type { IconNames } from '../common/Icons';
 import Touchable from '../common/Touchable';
+import { openLinkWithUserPreference } from '../utils/openLink';
+import type { GlobalSettingsState } from '../types';
 
 const componentStyles = createStyleSheet({
   buttonFrame: {
@@ -39,13 +41,14 @@ export default function NavButton(
     name: IconNames,
     onPress: () => void,
     accessibilityLabel?: string,
+    globalSettings: GlobalSettingsState,
   |}>,
 ): Node {
-  const { name, color = BRAND_COLOR, onPress, accessibilityLabel } = props;
+  const { name, color = BRAND_COLOR, onPress, accessibilityLabel, globalSettings } = props;
 
   return (
     <Touchable
-      onPress={onPress}
+      onPress={() => openLinkWithUserPreference(new URL('https://zulip.com/help/'), globalSettings)}
       accessibilityLabel={accessibilityLabel}
       style={componentStyles.buttonFrame}
     >

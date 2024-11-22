@@ -1,7 +1,7 @@
 /* @flow strict-local */
 import React, { useContext, useEffect } from 'react';
 import type { Node } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, View, TouchableOpacity, Linking } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 
 import { useGlobalSelector } from '../react-redux';
@@ -10,6 +10,18 @@ import * as NavigationService from './NavigationService';
 import { getGlobalSettings } from '../selectors';
 import AppNavigator from './AppNavigator';
 import { getThemeToUse } from '../settings/settingsSelectors';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+const INFO_URL = 'https://zulip.com/help';
+
+const InfoButton = () => (
+  <TouchableOpacity
+    style={{ position: 'absolute', top: 10, right: 10 }}
+    onPress={() => Linking.openURL(INFO_URL)}
+  >
+    <Icon name="info-circle" size={30} color="#000" />
+  </TouchableOpacity>
+);
 
 type Props = $ReadOnly<{||}>;
 
@@ -62,7 +74,10 @@ export default function ZulipAppContainer(props: Props): Node {
       }}
       theme={theme}
     >
-      <AppNavigator />
+      <View style={{ flex: 1 }}>
+        <AppNavigator />
+        <InfoButton />
+      </View>
     </NavigationContainer>
   );
 }

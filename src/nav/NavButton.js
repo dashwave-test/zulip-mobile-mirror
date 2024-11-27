@@ -53,3 +53,13 @@ export default function NavButton(
     </Touchable>
   );
 }
+
+export function InfoButton({ onPress }: { onPress: () => void }): Node {
+  return (
+    <NavButton
+      name="info-outline"
+      onPress={onPress}
+      accessibilityLabel="Info"
+    />
+  );
+}

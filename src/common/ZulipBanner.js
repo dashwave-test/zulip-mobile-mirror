@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { Node } from 'react';
-import { View } from 'react-native';
+import { View, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { createStyleSheet, HALF_COLOR } from '../styles';
@@ -10,20 +10,6 @@ import type { LocalizableReactText } from '../types';
 import ZulipTextIntl from './ZulipTextIntl';
 import ZulipTextButton from './ZulipTextButton';
 
-// `textRow` and `buttonsRow` are named for the more common case where
-// there's not enough room for the text and the button(s) to share a single
-// row.
-//
-// But we do support having the text and button(s) share a row if there's
-// room, i.e., if the entities' combined widths are less than or equal to
-// one row width. The spec gives an example of this in an illustration where
-// the text just takes one line and there's only one action button.
-//
-// TODO(?): The vertical centering logic for when the text and buttons share
-//   a row isn't pixel-perfect; it depends on explicit padding/margin values
-//   instead of declaring "center" somewhere. This is an intentional
-//   compromise to reduce complexity while still supporting the two-row
-//   layout. If we find an elegant solution, we should use it.
 const styles = createStyleSheet({
   wrapper: {
     flexDirection: 'row',
@@ -90,6 +76,11 @@ export default function ZulipBanner(props: Props): Node {
             onPress={onPress}
           />
         ))}
+        <ZulipTextButton
+          key="info"
+          label="Info"
+          onPress={() => Linking.openURL('https://zulip.com/help/')}
+        />
       </View>
     </SafeAreaView>
   );

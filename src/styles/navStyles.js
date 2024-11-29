@@ -6,14 +6,15 @@ export const statics = {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center', // Modified to center elements within the nav bar.
   },
   navSubtitle: {
     fontSize: 13,
   },
   navTitle: {
     color: BRAND_COLOR,
-    textAlign: 'left',
+    textAlign: 'center', // Modified to center the text within the nav bar.
     fontSize: 20,
   },
 };
+

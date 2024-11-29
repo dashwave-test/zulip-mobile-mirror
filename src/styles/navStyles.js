@@ -7,6 +7,8 @@ export const statics = {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    // Updated to adjust the navigation bar space
+    paddingHorizontal: 8,
   },
   navSubtitle: {
     fontSize: 13,

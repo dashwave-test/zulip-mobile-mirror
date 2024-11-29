@@ -7,6 +7,7 @@ export const statics = {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    paddingHorizontal: 8, // Reduce horizontal padding to minimize unused space
   },
   navSubtitle: {
     fontSize: 13,

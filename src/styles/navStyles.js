@@ -3,10 +3,10 @@ import { BRAND_COLOR } from './constants';
 
 export const statics = {
   navWrapper: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between', // Adjust this to space elements appropriately
+    paddingHorizontal: 16, // Add horizontal padding if needed
   },
   navSubtitle: {
     fontSize: 13,

@@ -6,7 +6,7 @@ export const statics = {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between', // Change made here to spread the items evenly
   },
   navSubtitle: {
     fontSize: 13,

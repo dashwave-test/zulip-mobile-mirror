@@ -38,7 +38,7 @@
     "base-64": "^1.0.0",
     "blueimp-md5": "^2.10.0",
     "color": "^4.0.1",
-    "date-fns": "^2.23.0",
+    "date-fns": "^2.30.0",
     "expo": "^45.0.0",
     "expo-apple-authentication": "~4.2.1",
     "expo-application": "~4.1.0",
@@ -145,3 +145,4 @@
     "react-native/use-subscription": ">=1.0.0 <1.6.0"
   }
 }
+

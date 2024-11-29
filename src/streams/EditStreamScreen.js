@@ -34,6 +34,11 @@ export default function EditStreamScreen(props: Props): Node {
 
   const handleComplete = useCallback(
     async changedValues => {
+      if (stream.is_default_stream && changedValues.privacy && changedValues.privacy !== 'public') {
+        showErrorAlert(_('Cannot make a default stream private.'));
+        return false;
+      }
+
       try {
         await dispatch(updateExistingStream(stream.stream_id, changedValues));
         return true;

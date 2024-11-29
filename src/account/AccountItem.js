@@ -1,7 +1,7 @@
 /* @flow strict-local */
 import React from 'react';
 import type { Node } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Pressable, View, Image } from 'react-native';
 // $FlowFixMe[untyped-import]
 import Color from 'color';
 
@@ -58,6 +58,11 @@ const styles = createStyleSheet({
     color: 'gray',
     marginVertical: 2,
   },
+  realmIcon: {
+    width: 32,
+    height: 32,
+    marginRight: 12,
+  },
 });
 
 type Props = $ReadOnly<{|
@@ -67,7 +72,7 @@ type Props = $ReadOnly<{|
 |}>;
 
 export default function AccountItem(props: Props): Node {
-  const { email, realm, isLoggedIn, notificationReport, silenceServerPushSetupWarnings } =
+  const { email, realm, isLoggedIn, notificationReport, silenceServerPushSetupWarnings, realmName, realmIcon } =
     props.account;
 
   const _ = React.useContext(TranslationContext);
@@ -97,10 +102,8 @@ export default function AccountItem(props: Props): Node {
   // `realmName` will be the real realm name, not the fallback.
   // TODO(#5005) look for server data even when this item's account is not
   //   the active one.
-  let realmName = '(unknown organization name)';
   let expiryWarning = null;
   if (isActiveAccount && activeAccountState != null && getHaveServerData(activeAccountState)) {
-    realmName = getRealmName(activeAccountState);
     expiryWarning = silenceServerPushSetupWarnings
       ? null
       : pushNotificationsEnabledEndTimestampWarning(activeAccountState, dateNow);
@@ -174,11 +177,12 @@ export default function AccountItem(props: Props): Node {
           { backgroundColor: backgroundItemColor },
         ]}
       >
+        {realmIcon && <Image style={styles.realmIcon} source={{ uri: realmIcon }} />}
         <View style={styles.details}>
           <ZulipText style={[styles.text, { color: textColor }]} text={email} numberOfLines={1} />
           <ZulipText
             style={[styles.text, { color: textColor }]}
-            text={realm.toString()}
+            text={realmName}
             numberOfLines={1}
           />
           {!isLoggedIn && (

@@ -7,6 +7,8 @@ export const statics = {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    paddingHorizontal: 16, // Added padding to prevent excess space
+    minHeight: 56, // Set a minimal height for the navigation bar
   },
   navSubtitle: {
     fontSize: 13,

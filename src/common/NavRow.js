@@ -1,7 +1,7 @@
 /* @flow strict-local */
 import React, { useContext, useMemo } from 'react';
 import type { Node } from 'react';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 
 import type { EmojiType, LocalizableReactText } from '../types';
 import ZulipTextIntl from './ZulipTextIntl';

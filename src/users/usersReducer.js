@@ -69,6 +69,9 @@ export default (
                   };
                 } else if (person.new_email !== undefined) {
                   return { ...user, email: person.new_email };
+                } else if (person.is_active === false) {
+                  // When a user is deactivated, they are removed from all groups
+                  return { ...user, ...person, user_group_ids: [] };
                 } else {
                   return { ...user, ...person };
                 }

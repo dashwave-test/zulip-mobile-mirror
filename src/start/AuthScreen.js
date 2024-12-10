@@ -2,7 +2,7 @@
 
 import React, { PureComponent } from 'react';
 import type { ComponentType } from 'react';
-import { Linking, Platform } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import type { AppleAuthenticationCredential } from 'expo-apple-authentication';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
@@ -22,6 +22,7 @@ import {
   IconGitHub,
   IconWindows,
   IconTerminal,
+  IconInfo,
 } from '../common/Icons';
 import type { SpecificIconType } from '../common/Icons';
 import { connectGlobal } from '../react-redux';
@@ -97,11 +98,6 @@ export const activeAuthentications = (
 ): $ReadOnlyArray<AuthenticationMethodDetails> => {
   const result = [];
 
-  // A server might intend some of these, such as 'dev' or 'password', but
-  // omit them in external_authentication_methods. The only sign that
-  // they're intended is their presence in authentication_methods… even
-  // though that's marked as deprecated in 2.1. Discussion:
-  //   https://chat.zulip.org/#narrow/stream/412-api-documentation/topic/audit.20for.20change.20entries.20vs.2E.20central.20changelog/near/1404115
   availableDirectMethods.forEach(auth => {
     if (!authenticationMethods[auth.name]) {
       return;
@@ -263,13 +259,6 @@ class AuthScreenInner extends PureComponent<Props> {
     });
 
     openLinkEmbedded(new URL(`/complete/apple/?${params}`, serverSettings.realm_uri));
-
-    // Currently, the rest is handled with the `zulip://` redirect,
-    // same as in the web flow.
-    //
-    // TODO: Maybe have an endpoint we can just send a request to,
-    // with `fetch`, and get the API key right away, without ever
-    // having to open the browser.
   };
 
   canUseNativeAppleFlow = async () => {
@@ -279,13 +268,6 @@ class AuthScreenInner extends PureComponent<Props> {
       return false;
     }
 
-    // The native flow for Apple auth assumes that the app and the server
-    // are operated by the same organization, so that for a user to
-    // entrust private information to either one is the same as entrusting
-    // it to the other.  Check that this realm is on such a server.
-    //
-    // (For other realms, we'll simply fall back to the web flow, which
-    // handles things appropriately without relying on that assumption.)
     return isAppOwnDomain(serverSettings.realm_uri);
   };
 
@@ -303,6 +285,10 @@ class AuthScreenInner extends PureComponent<Props> {
     }
   };
 
+  handleInfoPress = () => {
+    Linking.openURL('https://zulip.com/help/');
+  };
+
   render() {
     const { serverSettings } = this.props.route.params;
 
@@ -312,6 +298,13 @@ class AuthScreenInner extends PureComponent<Props> {
           <RealmInfo
             name={serverSettings.realm_name}
             iconUrl={new URL(serverSettings.realm_icon, serverSettings.realm_uri).toString()}
+          />
+          <ZulipButton
+            style={styles.halfMarginTop}
+            secondary
+            Icon={IconInfo}
+            text="Learn more about Zulip"
+            onPress={this.handleInfoPress}
           />
           {activeAuthentications(
             serverSettings.authentication_methods,

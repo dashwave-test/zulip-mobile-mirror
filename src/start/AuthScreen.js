@@ -2,7 +2,7 @@
 
 import React, { PureComponent } from 'react';
 import type { ComponentType } from 'react';
-import { Linking, Platform } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import type { AppleAuthenticationCredential } from 'expo-apple-authentication';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
@@ -22,6 +22,7 @@ import {
   IconGitHub,
   IconWindows,
   IconTerminal,
+  IconHelp,
 } from '../common/Icons';
 import type { SpecificIconType } from '../common/Icons';
 import { connectGlobal } from '../react-redux';
@@ -303,6 +304,10 @@ class AuthScreenInner extends PureComponent<Props> {
     }
   };
 
+  handleInfoPress = () => {
+    Linking.openURL('https://zulip.com/help/');
+  };
+
   render() {
     const { serverSettings } = this.props.route.params;
 
@@ -337,6 +342,13 @@ class AuthScreenInner extends PureComponent<Props> {
               />
             ),
           )}
+          <ZulipButton
+            style={styles.halfMarginTop}
+            secondary
+            text="Need help?"
+            Icon={IconHelp}
+            onPress={this.handleInfoPress}
+          />
         </Centerer>
       </Screen>
     );
